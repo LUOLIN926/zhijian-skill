@@ -368,7 +368,7 @@ font-family: 'Noto Serif SC', 'Noto Serif', serif;
 ## 资源文件导览
 
 ```
-zhijian-design/
+zhijian/
 ├── SKILL.md              ← 你正在读
 └── reference/
     ├── design-tokens.md      ← 完整设计系统

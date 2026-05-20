@@ -5,14 +5,14 @@
 ## 安装
 
 1. 下载或克隆本仓库
-2. 将 `zhijian-design` 文件夹放入你项目的 `.claude/skills/` 目录下
+2. 将 `zhijian` 文件夹放入你项目的 `.claude/skills/` 目录下
 3. 确保目录结构如下：
 
 ```
 your-project/
 ├── .claude/
 │   └── skills/
-│       └── zhijian-design/
+│       └── zhijian/
 │           ├── SKILL.md
 │           └── reference/
 │               ├── design-tokens.md
