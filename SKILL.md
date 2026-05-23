@@ -258,6 +258,7 @@ font-family: 'Noto Serif SC', 'Noto Serif', serif;
 - [ ] index.html 是完整 HTML 文档
 - [ ] 无 Cookie / localStorage / 跨域请求
 - [ ] 所有资源为内联或 CDN 链接
+- [ ] **不包含独立的标题/简介 header 区域**（平台会从 metadata 自动显示作品标题和简介）
 
 ---
 
