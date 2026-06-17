@@ -31,7 +31,7 @@
   "title": "作品标题",
   "brief_description": "一句话简介",
   "usage_markdown": "## 使用说明\n...",
-  "tags": ["标签1", "标签2"],
+  "tags": ["交互演示", "标签1", "标签2"],
   "status": "published",
   "cover": {
     "type": "image",
@@ -53,7 +53,7 @@
 | `title` | string | 是 | 非空，去除首尾空格后 ≤ 200 字符 |
 | `brief_description` | string | 否 | ≤ 2000 字符 |
 | `usage_markdown` | string | 否 | Markdown 格式，≤ 200000 字符 |
-| `tags` | string[] | 否 | 每个标签 ≤ 50 字符，最多 5 个，自动去重 |
+| `tags` | string[] | 否 | 每个标签 ≤ 50 字符，最多 5 个，自动去重；第一个类型标签应为 `交互演示` 或 `动态书` |
 | `status` | string | 是 | `draft` / `published` / `hidden` / `locked` / `pending_review` |
 | `cover` | object | 否 | 封面信息，含 `type`（`image` / `html` / `none`） |
 | `created_at` | string | 是 | ISO 8601 时间戳 |
@@ -83,7 +83,7 @@
 
 - `schema_version` 修改后必须保持为 `1`
 - `title` 是发布时的必填字段
-- `tags` 上传时会重新验证：去重、去空、截断超长标签
+- `tags` 上传时会重新验证：去重、去空、截断超长标签；旧类型 `互动图片视频`、`流程图` 会归并为 `交互演示`
 - `id`、`status`、`created_at`、`updated_at`、`exported_at` 在上传时会被忽略或覆盖，修改无意义
 
 ### 编辑 metadata/usage.md
@@ -151,6 +151,7 @@
 
 系统会解析 JSON 文件并预填表单：
 - 标题、简介、标签、使用说明会自动填入
+- 若 JSON 未提供作品类型，平台会使用创建入口选择的类型或默认 `交互演示`
 - 可在表单中手动修改任何字段
 
 ### Step 4 · 提交
