@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MACD 指标入门：从概念到实战</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* 品牌色 */
+      --color-primary: #4A6741;
+      --color-primary-dark: #3A5334;
+      --color-primary-light: #6B8E63;
+
+      /* 次色与强调 */
+      --color-secondary: #A0522D;
+      --color-accent: #8B7355;
+      --color-earth: #C4A77D;
+
+      /* 背景色 */
+      --color-cream: #FAF8F5;
+      --color-cream-dark: #F5F2ED;
+
+      /* 文字色 */
+      --color-text: #3D3229;
+      --color-text-light: #6B5D4D;
+      --color-text-muted: #766958;
+
+      /* 装饰色 */
+      --color-sky: #5B8A8A;
+      --color-lavender: #c2a2d2;
+      --color-autumn: #9B8568;
+      --color-moss: #6B8E6B;
+      --color-rust: #B8765A;
+
+      /* 状态色 */
+      --color-success: #5B8C5A;
+      --color-warning: #C9844A;
+      --color-danger: #A65D4E;
+
+      /* 字体 */
+      --font-family: 'Noto Serif SC', 'Noto Serif', serif;
+      --font-weight-regular: 400;
+      --font-weight-medium: 500;
+      --font-weight-semibold: 600;
+      --font-weight-bold: 800;
+
+      /* 间距 */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --spacing-2xl: 48px;
+
+      /* 圆角 */
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --radius-full: 9999px;
+
+      /* 阴影 */
+      --shadow-sm: 0 2px 8px rgba(61, 50, 41, 0.08);
+      --shadow-md: 0 4px 16px rgba(61, 50, 41, 0.12);
+      --shadow-lg: 0 8px 32px rgba(61, 50, 41, 0.16);
+
+      /* 过渡 */
+      --transition-fast: 0.15s ease-out;
+      --transition-normal: 0.3s ease-out;
+      --transition-slow: 0.5s ease-out;
+
+      /* 缓动 */
+      --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+      --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: var(--font-family);
+      font-weight: var(--font-weight-regular);
+      color: var(--color-text);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(196, 167, 125, 0.18), transparent 32rem),
+        linear-gradient(180deg, var(--color-cream) 0%, var(--color-cream-dark) 100%);
+      padding: var(--spacing-lg);
+      line-height: 1.6;
+    }
+
+    button, input, a {
+      font: inherit;
+    }
+
+    /* 主容器 */
+    .shell {
+      width: min(1200px, 100%);
+      margin: 0 auto;
+      display: grid;
+      gap: var(--spacing-lg);
+    }
+
+    /* 标签导航 */
+    .tab-nav {
+      display: flex;
+      gap: var(--spacing-sm);
+      background: white;
+      padding: var(--spacing-sm);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-cream-dark);
+    }
+
+    .tab-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-sm);
+      min-height: 48px;
+      padding: var(--spacing-md);
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--color-text-light);
+      cursor: pointer;
+      font-weight: var(--font-weight-semibold);
+      transition: all var(--transition-fast);
+    }
+
+    .tab-btn:hover {
+      background: var(--color-cream);
+      color: var(--color-text);
+    }
+
+    .tab-btn.active {
+      background: var(--color-primary);
+      color: white;
+      border-color: var(--color-primary-dark);
+    }
+
+    .tab-btn .icon {
+      font-size: 1.2em;
+    }
+
+    /* 主布局 */
+    .main-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: var(--spacing-lg);
+      align-items: start;
+    }
+
+    /* 画布卡片 */
+    .canvas-card {
+      background: white;
+      border: 1px solid var(--color-cream-dark);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+
+    .canvas-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--spacing-md);
+      border-bottom: 1px solid var(--color-cream-dark);
+    }
+
+    .canvas-title {
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-primary-dark);
+    }
+
+    .canvas-wrap {
+      position: relative;
+      background: var(--color-cream);
+      min-height: 400px;
+    }
+
+    .canvas-wrap canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .canvas-footer {
+      display: flex;
+      gap: var(--spacing-md);
+      padding: var(--spacing-md);
+      border-top: 1px solid var(--color-cream-dark);
+      background: var(--color-cream);
+    }
+
+    /* 控制面板 */
+    .panel {
+      display: grid;
+      gap: var(--spacing-md);
+    }
+
+    .panel-card {
+      background: white;
+      border: 1px solid var(--color-cream-dark);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: var(--spacing-lg);
+    }
+
+    .panel-card h3 {
+      font-size: 1.1rem;
+      font-weight: var(--font-weight-bold);
+      color: var(--color-primary-dark);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .panel-card p {
+      color: var(--color-text-light);
+      font-size: 0.95em;
+      line-height: 1.7;
+    }
+
+    .panel-card ul {
+      list-style: none;
+      display: grid;
+      gap: var(--spacing-sm);
+    }
+
+    .panel-card li {
+      padding-left: var(--spacing-lg);
+      position: relative;
+      color: var(--color-text-light);
+      font-size: 0.95em;
+    }
+
+    .panel-card li::before {
+      content: '•';
+      position: absolute;
+      left: var(--spacing-sm);
+      color: var(--color-primary);
+    }
+
+    /* 滑块控件 */
+    .slider-group {
+      display: grid;
+      gap: var(--spacing-md);
+    }
+
+    .slider-item {
+      display: grid;
+      gap: var(--spacing-xs);
+    }
+
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85em;
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-light);
+    }
+
+    .slider-value {
+      color: var(--color-primary);
+      font-weight: var(--font-weight-bold);
+    }
+
+    .slider-input {
+      width: 100%;
+      height: 6px;
+      border-radius: var(--radius-full);
+      background: var(--color-cream-dark);
+      appearance: none;
+      cursor: pointer;
+    }
+
+    .slider-input::-webkit-slider-thumb {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: var(--radius-full);
+      background: var(--color-primary);
+      border: 2px solid white;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+    }
+
+    /* 按钮 */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-sm);
+      min-height: 42px;
+      padding: 0 var(--spacing-md);
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-weight: var(--font-weight-bold);
+      transition: all var(--transition-fast);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary {
+      background: var(--color-primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--color-primary-dark);
+    }
+
+    .btn-secondary {
+      background: var(--color-cream);
+      border-color: var(--color-earth);
+      color: var(--color-text);
+    }
+
+    .btn-secondary:hover {
+      background: var(--color-cream-dark);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+
+    .btn-outline:hover {
+      background: var(--color-primary);
+      color: white;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: var(--spacing-sm);
+    }
+
+    /* 切换按钮组 */
+    .toggle-group {
+      display: grid;
+      gap: var(--spacing-sm);
+    }
+
+    .toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--color-cream-dark);
+      border-radius: var(--radius-sm);
+      background: var(--color-cream);
+      color: var(--color-text);
+      cursor: pointer;
+      font-size: 0.9em;
+      transition: all var(--transition-fast);
+    }
+
+    .toggle-btn:hover {
+      background: var(--color-cream-dark);
+    }
+
+    .toggle-btn.active {
+      border-color: var(--color-primary);
+      background: color-mix(in oklch, var(--color-primary) 12%, white);
+    }
+
+    .toggle-btn .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: var(--radius-full);
+    }
+
+    .toggle-btn .dot.price { background: var(--color-rust); }
+    .toggle-btn .dot.dif { background: var(--color-sky); }
+    .toggle-btn .dot.dea { background: var(--color-autumn); }
+    .toggle-btn .dot.macd { background: var(--color-success); }
+
+    /* 状态栏 */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-md);
+      padding: var(--spacing-md);
+      background: white;
+      border: 1px solid var(--color-cream-dark);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      font-size: 0.9em;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .status-label {
+      color: var(--color-text-muted);
+    }
+
+    .status-value {
+      color: var(--color-text);
+      font-weight: var(--font-weight-semibold);
+    }
+
+    /* 信号解读面板 */
+    .signal-list {
+      display: grid;
+      gap: var(--spacing-sm);
+    }
+
+    .signal-item {
+      display: grid;
+      gap: var(--spacing-xs);
+      padding: var(--spacing-md);
+      border: 1px solid var(--color-cream-dark);
+      border-radius: var(--radius-sm);
+      background: var(--color-cream);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .signal-item:hover {
+      background: var(--color-cream-dark);
+      border-color: var(--color-earth);
+    }
+
+    .signal-item.active {
+      border-color: var(--color-primary);
+      background: color-mix(in oklch, var(--color-primary) 8%, white);
+    }
+
+    .signal-title {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text);
+    }
+
+    .signal-badge {
+      display: inline-flex;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-size: 0.75em;
+      font-weight: var(--font-weight-bold);
+    }
+
+    .signal-badge.golden { background: var(--color-success); color: white; }
+    .signal-badge.death { background: var(--color-danger); color: white; }
+    .signal-badge.bottom { background: var(--color-lavender); color: var(--color-text); }
+    .signal-badge.top { background: var(--color-warning); color: white; }
+
+    .signal-desc {
+      color: var(--color-text-muted);
+      font-size: 0.85em;
+    }
+
+    /* 回放进度条 */
+    .playback-progress {
+      display: grid;
+      gap: var(--spacing-xs);
+    }
+
+    .progress-bar {
+      height: 8px;
+      border-radius: var(--radius-full);
+      background: var(--color-cream-dark);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+      transition: width var(--transition-fast);
+    }
+
+    /* 概念章节专用 */
+    .concept-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-xl);
+      align-items: center;
+      padding: var(--spacing-xl);
+    }
+
+    .concept-text h2 {
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-primary-dark);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .concept-text p {
+      color: var(--color-text-light);
+      line-height: 1.8;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .concept-visual {
+      position: relative;
+      aspect-ratio: 1;
+      background: var(--color-cream);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 响应式 */
+    @media (max-width: 900px) {
+      .main-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .tab-nav {
+        flex-wrap: wrap;
+      }
+
+      .tab-btn {
+        flex: 1 1 calc(50% - var(--spacing-sm));
+      }
+
+      .concept-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: var(--spacing-md);
+      }
+
+      .tab-btn {
+        flex: 1 1 100%;
+      }
+
+      .canvas-wrap {
+        min-height: 280px;
+      }
+
+      .status-bar {
+        flex-wrap: wrap;
+      }
+    }
+
+    /* 减少动画 */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <!-- 标签导航 -->
+    <nav class="tab-nav" aria-label="章节导航">
+      <button class="tab-btn active" data-tab="concept" type="button">
+        <span class="icon">💡</span>
+        <span>概念</span>
+      </button>
+      <button class="tab-btn" data-tab="components" type="button">
+        <span class="icon">📊</span>
+        <span>组成</span>
+      </button>
+      <button class="tab-btn" data-tab="calculation" type="button">
+        <span class="icon">⚙️</span>
+        <span>计算</span>
+      </button>
+      <button class="tab-btn" data-tab="signals" type="button">
+        <span class="icon">🎯</span>
+        <span>信号</span>
+      </button>
+    </nav>
+
+    <!-- 章节 1：概念 -->
+    <section class="tab-content" data-content="concept">
+      <div class="concept-layout">
+        <div class="concept-text">
+          <h2>什么是 MACD？</h2>
+          <p>MACD（Moving Average Convergence Divergence，移动平均收敛发散指标）是由 Gerald Appel 于 1979 年开发的技术分析工具。</p>
+          <p>它通过比较两条不同周期的移动平均线之间的关系，来判断价格趋势的方向和强度。当两条线"收敛"时，趋势可能结束；当"发散"时，趋势正在加强。</p>
+          <p>MACD 广泛应用于股票、期货、外汇等市场，是最受欢迎的趋势跟踪指标之一。</p>
+          <ul>
+            <li>判断趋势方向（上涨或下跌）</li>
+            <li>识别买卖时机（金叉与死叉）</li>
+            <li>预警趋势反转（背离信号）</li>
+          </ul>
+        </div>
+        <div class="concept-visual">
+          <canvas id="conceptCanvas"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- 章节 2：组成 -->
+    <section class="tab-content" data-content="components" style="display: none;">
+      <div class="main-layout">
+        <div class="canvas-card">
+          <div class="canvas-header">
+            <span class="canvas-title">股价与 MACD 组成</span>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="componentsCanvas"></canvas>
+          </div>
+          <div class="canvas-footer">
+            <div class="btn-group">
+              <button class="btn btn-secondary" id="resetComponentsBtn" type="button">重置</button>
+            </div>
+          </div>
+        </div>
+        <aside class="panel">
+          <div class="panel-card">
+            <h3>三线解读</h3>
+            <div class="toggle-group">
+              <button class="toggle-btn active" data-line="price" type="button">
+                <span class="dot price"></span>
+                <span>股价线（原始数据）</span>
+              </button>
+              <button class="toggle-btn active" data-line="dif" type="button">
+                <span class="dot dif"></span>
+                <span>DIF 快线（短期趋势）</span>
+              </button>
+              <button class="toggle-btn active" data-line="dea" type="button">
+                <span class="dot dea"></span>
+                <span>DEA 慢线（长期趋势）</span>
+              </button>
+              <button class="toggle-btn active" data-line="macd" type="button">
+                <span class="dot macd"></span>
+                <span>MACD 柱（趋势强度）</span>
+              </button>
+            </div>
+          </div>
+          <div class="panel-card">
+            <h3>各线含义</h3>
+            <p><strong>DIF（快线）</strong>：反映短期价格变化，对近期走势更敏感，波动较大。</p>
+            <p><strong>DEA（慢线）</strong>：反映长期趋势方向，波动平缓，起确认作用。</p>
+            <p><strong>MACD 柱</strong>：DIF 与 DEA 的差值，直观显示趋势强度。正值表示上涨动能，负值表示下跌动能。</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- 章节 3：计算 -->
+    <section class="tab-content" data-content="calculation" style="display: none;">
+      <div class="main-layout">
+        <div class="canvas-card">
+          <div class="canvas-header">
+            <span class="canvas-title">计算原理演示</span>
+            <span style="color: var(--color-text-muted); font-size: 0.85em;">拖拽绘制模拟股价</span>
+          </div>
+          <div class="canvas-wrap" id="calcCanvasWrap">
+            <canvas id="calcCanvas"></canvas>
+          </div>
+          <div class="canvas-footer">
+            <button class="btn btn-primary" id="demoCalcBtn" type="button">演示计算</button>
+            <button class="btn btn-secondary" id="clearDrawBtn" type="button">清除绘制</button>
+            <button class="btn btn-secondary" id="resetCalcBtn" type="button">重置</button>
+          </div>
+        </div>
+        <aside class="panel">
+          <div class="panel-card">
+            <h3>参数调节</h3>
+            <div class="slider-group">
+              <div class="slider-item">
+                <div class="slider-label">
+                  <span>快线周期（短期）</span>
+                  <span class="slider-value" id="fastValue">12</span>
+                </div>
+                <input class="slider-input" id="fastSlider" type="range" min="5" max="20" value="12">
+              </div>
+              <div class="slider-item">
+                <div class="slider-label">
+                  <span>慢线周期（长期）</span>
+                  <span class="slider-value" id="slowValue">26</span>
+                </div>
+                <input class="slider-input" id="slowSlider" type="range" min="15" max="40" value="26">
+              </div>
+              <div class="slider-item">
+                <div class="slider-label">
+                  <span>DEA 周期（平滑）</span>
+                  <span class="slider-value" id="signalValue">9</span>
+                </div>
+                <input class="slider-input" id="signalSlider" type="range" min="5" max="15" value="9">
+              </div>
+            </div>
+          </div>
+          <div class="panel-card">
+            <h3>计算步骤</h3>
+            <ul>
+              <li><strong>Step 1</strong>：计算快线 EMA（短期平滑）</li>
+              <li><strong>Step 2</strong>：计算慢线 EMA（长期平滑）</li>
+              <li><strong>Step 3</strong>：DIF = 快线 EMA − 慢线 EMA</li>
+              <li><strong>Step 4</strong>：DEA = DIF 的 EMA（再平滑）</li>
+              <li><strong>Step 5</strong>：MACD柱 = (DIF − DEA) × 2</li>
+            </ul>
+            <p style="margin-top: var(--spacing-md);">点击「演示计算」按钮，观看逐步动画演示。</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- 章节 4：信号 -->
+    <section class="tab-content" data-content="signals" style="display: none;">
+      <div class="main-layout">
+        <div class="canvas-card">
+          <div class="canvas-header">
+            <span class="canvas-title">信号解读与案例</span>
+            <span style="color: var(--color-text-muted); font-size: 0.85em;">点击标注查看解读</span>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="signalsCanvas"></canvas>
+          </div>
+          <div class="canvas-footer">
+            <button class="btn btn-primary" id="playbackBtn" type="button">播放回放</button>
+            <button class="btn btn-secondary" id="pauseBtn" type="button">暂停</button>
+            <button class="btn btn-secondary" id="resetSignalsBtn" type="button">重置</button>
+          </div>
+        </div>
+        <aside class="panel">
+          <div class="panel-card">
+            <h3>回放进度</h3>
+            <div class="playback-progress">
+              <div class="progress-bar">
+                <div class="progress-fill" id="playbackFill" style="width: 0%"></div>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: var(--color-text-muted);">
+                <span id="playbackStep">第 0 步</span>
+                <span id="playbackTotal">共 80 步</span>
+              </div>
+            </div>
+          </div>
+          <div class="panel-card">
+            <h3>信号标注</h3>
+            <div class="signal-list" id="signalList">
+              <div class="signal-item" data-signal="golden1">
+                <div class="signal-title">
+                  <span class="signal-badge golden">金叉</span>
+                  <span>买入信号</span>
+                </div>
+                <span class="signal-desc">DIF 从下向上穿过 DEA</span>
+              </div>
+              <div class="signal-item" data-signal="death1">
+                <div class="signal-title">
+                  <span class="signal-badge death">死叉</span>
+                  <span>卖出信号</span>
+                </div>
+                <span class="signal-desc">DIF 从上向下穿过 DEA</span>
+              </div>
+              <div class="signal-item" data-signal="bottom">
+                <div class="signal-title">
+                  <span class="signal-badge bottom">底背离</span>
+                  <span>反转信号</span>
+                </div>
+                <span class="signal-desc">股价新低，MACD 未新低</span>
+              </div>
+              <div class="signal-item" data-signal="top">
+                <div class="signal-title">
+                  <span class="signal-badge top">顶背离</span>
+                  <span>预警信号</span>
+                </div>
+                <span class="signal-desc">股价新高，MACD 未新高</span>
+              </div>
+            </div>
+          </div>
+          <div class="panel-card">
+            <h3>信号解读</h3>
+            <p id="signalDetail">点击图表上的信号标注，查看详细解读。</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- 状态栏 -->
+    <footer class="status-bar">
+      <div class="status-item">
+        <span class="status-label">当前章节：</span>
+        <span class="status-value" id="currentChapter">概念</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">参数：</span>
+        <span class="status-value" id="currentParams">12/26/9</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">提示：</span>
+        <span class="status-value" id="statusHint">探索 MACD 的基本概念</span>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // ========== 全局状态 ==========
+    const state = {
+      currentTab: 'concept',
+      params: { fast: 12, slow: 26, signal: 9 },
+      showLines: { price: true, dif: true, dea: true, macd: true },
+      isPlaying: false,
+      playbackIndex: 0,
+      drawnPoints: [],
+      isDrawing: false,
+      calcStep: 0
+    };
+
+    // ========== 预设数据 ==========
+    // 模拟一段完整走势：上升 → 见顶 → 下跌 → 底背离反转 → 震荡 → 顶背离 → 再下跌
+    function generatePriceData(length) {
+      const data = [];
+      let price = 50;
+      for (let i = 0; i < length; i++) {
+        // 分段模拟不同走势
+        if (i < 15) {
+          price += Math.random() * 2 + 0.5; // 上升
+        } else if (i < 20) {
+          price += Math.random() * 1 - 0.3; // 见顶震荡
+        } else if (i < 35) {
+          price -= Math.random() * 2 + 0.3; // 下跌
+        } else if (i < 45) {
+          price -= Math.random() * 0.5 + 0.1; // 底部背离区间（缓慢下跌）
+        } else if (i < 55) {
+          price += Math.random() * 1.5 + 0.2; // 反转上升
+        } else if (i < 65) {
+          price += Math.random() * 0.8 - 0.2; // 震荡
+        } else if (i < 75) {
+          price += Math.random() * 1.2 + 0.3; // 再次上升（顶背离）
+        } else {
+          price -= Math.random() * 2 + 0.5; // 最终下跌
+        }
+        price = Math.max(20, Math.min(100, price));
+        data.push(price);
+      }
+      return data;
+    }
+
+    const priceData = generatePriceData(80);
+
+    // ========== MACD 计算 ==========
+    function calcEMA(data, period) {
+      const k = 2 / (period + 1);
+      const result = [data[0]];
+      let ema = data[0];
+      for (let i = 1; i < data.length; i++) {
+        ema = data[i] * k + ema * (1 - k);
+        result.push(ema);
+      }
+      return result;
+    }
+
+    function calcMACD(data, fast, slow, signal) {
+      const emaFast = calcEMA(data, fast);
+      const emaSlow = calcEMA(data, slow);
+      const dif = emaFast.map((v, i) => v - emaSlow[i]);
+      const dea = calcEMA(dif, signal);
+      const macd = dif.map((v, i) => (v - dea[i]) * 2);
+      return { emaFast, emaSlow, dif, dea, macd };
+    }
+
+    // ========== 信号检测 ==========
+    function detectSignals(dif, dea) {
+      const signals = [];
+      for (let i = 1; i < dif.length; i++) {
+        // 金叉
+        if (dif[i - 1] < dea[i - 1] && dif[i] > dea[i]) {
+          signals.push({ type: 'golden', index: i });
+        }
+        // 死叉
+        if (dif[i - 1] > dea[i - 1] && dif[i] < dea[i]) {
+          signals.push({ type: 'death', index: i });
+        }
+      }
+      return signals;
+    }
+
+    function detectDivergence(prices, macd) {
+      const divergences = [];
+      // 简化的背离检测：寻找局部极值
+      for (let i = 5; i < prices.length - 5; i++) {
+        const prevPrices = prices.slice(i - 5, i);
+        const nextPrices = prices.slice(i, i + 5);
+        const prevMacd = macd.slice(i - 5, i);
+        const nextMacd = macd.slice(i, i + 5);
+
+        // 底背离：股价创新低但 MACD 没有新低
+        if (Math.min(...prevPrices) > prices[i] && Math.min(...prevMacd) <= Math.min(...nextMacd)) {
+          divergences.push({ type: 'bottom', index: i });
+        }
+        // 顶背离：股价创新高但 MACD 没有新高
+        if (Math.max(...prevPrices) < prices[i] && Math.max(...prevMacd) >= Math.max(...nextMacd)) {
+          divergences.push({ type: 'top', index: i });
+        }
+      }
+      return divergences;
+    }
+
+    // ========== Canvas 工具 ==========
+    function setupCanvas(canvas) {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      canvas.style.width = rect.width + 'px';
+      canvas.style.height = rect.height + 'px';
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { ctx, width: rect.width, height: rect.height };
+    }
+
+    function clearCanvas(ctx, width, height) {
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#FAF8F5';
+      ctx.fillRect(0, 0, width, height);
+    }
+
+    // ========== 绘制图表 ==========
+    function drawLine(ctx, data, color, xScale, yScale, yOffset = 0) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      data.forEach((v, i) => {
+        const x = i * xScale;
+        const y = yOffset - v * yScale;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    }
+
+    function drawMACDBars(ctx, data, xScale, yScale, yOffset, positiveColor, negativeColor) {
+      const barWidth = xScale * 0.6;
+      data.forEach((v, i) => {
+        const x = i * xScale - barWidth / 2;
+        const height = Math.abs(v) * yScale;
+        const y = v >= 0 ? yOffset - height : yOffset;
+        ctx.fillStyle = v >= 0 ? positiveColor : negativeColor;
+        ctx.fillRect(x, y, barWidth, height);
+      });
+    }
+
+    function drawSignalMarker(ctx, x, y, type) {
+      const colors = {
+        golden: '#5B8C5A',
+        death: '#A65D4E',
+        bottom: '#c2a2d2',
+        top: '#C9844A'
+      };
+      ctx.beginPath();
+      ctx.arc(x, y, 8, 0, Math.PI * 2);
+      ctx.fillStyle = colors[type];
+      ctx.fill();
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      // 发光效果
+      ctx.shadowColor = colors[type];
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    // ========== 各章节画布 ==========
+    // 章节 1：概念
+    function renderConceptCanvas() {
+      const canvas = document.getElementById('conceptCanvas');
+      if (!canvas) return;
+      const { ctx, width, height } = setupCanvas(canvas);
+      clearCanvas(ctx, width, height);
+
+      // 绘制示意图：两条曲线收敛发散
+      const centerY = height / 2;
+      ctx.strokeStyle = '#5B8A8A';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      for (let i = 0; i < width; i++) {
+        const y = centerY + Math.sin(i * 0.02) * 40 - (i / width) * 30;
+        if (i === 0) ctx.moveTo(i, y);
+        else ctx.lineTo(i, y);
+      }
+      ctx.stroke();
+
+      ctx.strokeStyle = '#9B8568';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      for (let i = 0; i < width; i++) {
+        const y = centerY + Math.sin(i * 0.02 + 0.5) * 30 + (i / width) * 20;
+        if (i === 0) ctx.moveTo(i, y);
+        else ctx.lineTo(i, y);
+      }
+      ctx.stroke();
+
+      // 标注
+      ctx.font = '14px Noto Serif SC';
+      ctx.fillStyle = '#5B8A8A';
+      ctx.fillText('快线（DIF）', 20, 30);
+      ctx.fillStyle = '#9B8568';
+      ctx.fillText('慢线（DEA）', 20, 60);
+
+      // 收敛发散标注
+      ctx.fillStyle = '#4A6741';
+      ctx.font = '12px Noto Serif SC';
+      ctx.fillText('收敛 → 趋势减弱', width * 0.3, height - 20);
+      ctx.fillText('发散 → 趋势加强', width * 0.7, height - 20);
+    }
+
+    // 章节 2：组成
+    function renderComponentsCanvas() {
+      const canvas = document.getElementById('componentsCanvas');
+      if (!canvas) return;
+      const { ctx, width, height } = setupCanvas(canvas);
+
+      const padding = 40;
+      const chartWidth = width - padding * 2;
+      const chartHeight = height - padding * 2;
+
+      clearCanvas(ctx, width, height);
+
+      const macdResult = calcMACD(priceData.slice(0, 50), state.params.fast, state.params.slow, state.params.signal);
+      const sliceData = priceData.slice(0, 50);
+
+      // 价格图（上半部分）
+      const priceChartHeight = chartHeight * 0.45;
+      const priceYOffset = padding + priceChartHeight;
+      const priceMin = Math.min(...sliceData);
+      const priceMax = Math.max(...sliceData);
+      const priceRange = priceMax - priceMin;
+      const priceYScale = priceChartHeight / priceRange * 0.9;
+      const xScale = chartWidth / sliceData.length;
+
+      // 绘制分隔线
+      ctx.strokeStyle = '#C4A77D';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padding, padding + priceChartHeight + 20);
+      ctx.lineTo(width - padding, padding + priceChartHeight + 20);
+      ctx.stroke();
+
+      // 价格线
+      if (state.showLines.price) {
+        drawLine(ctx, sliceData, '#B8765A', xScale, priceYScale, priceYOffset - priceMin * priceYScale);
+      }
+
+      // MACD 图（下半部分）
+      const macdChartTop = padding + priceChartHeight + 40;
+      const macdChartHeight = chartHeight * 0.45;
+      const macdCenterY = macdChartTop + macdChartHeight / 2;
+
+      // 找到 MACD 数据范围
+      const macdMax = Math.max(...macdResult.dif.map(Math.abs), ...macdResult.dea.map(Math.abs), ...macdResult.macd.map(Math.abs));
+      const macdYScale = macdChartHeight / 2 / macdMax * 0.85;
+
+      // 零轴
+      ctx.strokeStyle = '#C4A77D';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padding, macdCenterY);
+      ctx.lineTo(width - padding, macdCenterY);
+      ctx.stroke();
+
+      // DIF 线
+      if (state.showLines.dif) {
+        drawLine(ctx, macdResult.dif, '#5B8A8A', xScale, macdYScale, macdCenterY);
+      }
+
+      // DEA 线
+      if (state.showLines.dea) {
+        drawLine(ctx, macdResult.dea, '#9B8568', xScale, macdYScale, macdCenterY);
+      }
+
+      // MACD 柱
+      if (state.showLines.macd) {
+        drawMACDBars(ctx, macdResult.macd, xScale, macdYScale, macdCenterY, '#5B8C5A', '#B8765A');
+      }
+
+      // 图例
+      ctx.font = '12px Noto Serif SC';
+      const legendY = height - 20;
+      if (state.showLines.price) {
+        ctx.fillStyle = '#B8765A';
+        ctx.fillText('股价', padding, legendY);
+      }
+      if (state.showLines.dif) {
+        ctx.fillStyle = '#5B8A8A';
+        ctx.fillText('DIF', padding + 60, legendY);
+      }
+      if (state.showLines.dea) {
+        ctx.fillStyle = '#9B8568';
+        ctx.fillText('DEA', padding + 100, legendY);
+      }
+      if (state.showLines.macd) {
+        ctx.fillStyle = '#5B8C5A';
+        ctx.fillText('MACD柱', padding + 150, legendY);
+      }
+    }
+
+    // 章节 3：计算
+    function renderCalcCanvas(customData = null) {
+      const canvas = document.getElementById('calcCanvas');
+      if (!canvas) return;
+      const { ctx, width, height } = setupCanvas(canvas);
+
+      const padding = 40;
+      const chartWidth = width - padding * 2;
+      const chartHeight = height - padding * 2;
+
+      clearCanvas(ctx, width, height);
+
+      // 使用自定义绘制数据或预设数据
+      const displayData = customData || priceData.slice(0, 60);
+      const macdResult = calcMACD(displayData, state.params.fast, state.params.slow, state.params.signal);
+
+      // 价格图（上半部分）
+      const priceChartHeight = chartHeight * 0.45;
+      const priceYOffset = padding + priceChartHeight;
+      const priceMin = Math.min(...displayData);
+      const priceMax = Math.max(...displayData);
+      const priceRange = priceMax - priceMin || 1;
+      const priceYScale = priceChartHeight / priceRange * 0.9;
+      const xScale = chartWidth / displayData.length;
+
+      // 绘制分隔线
+      ctx.strokeStyle = '#C4A77D';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padding, padding + priceChartHeight + 20);
+      ctx.lineTo(width - padding, padding + priceChartHeight + 20);
+      ctx.stroke();
+
+      // 价格线
+      drawLine(ctx, displayData, '#B8765A', xScale, priceYScale, priceYOffset - priceMin * priceYScale);
+
+      // MACD 图（下半部分）
+      const macdChartTop = padding + priceChartHeight + 40;
+      const macdChartHeight = chartHeight * 0.45;
+      const macdCenterY = macdChartTop + macdChartHeight / 2;
+
+      const macdMax = Math.max(...macdResult.dif.map(Math.abs), ...macdResult.dea.map(Math.abs), ...macdResult.macd.map(Math.abs)) || 1;
+      const macdYScale = macdChartHeight / 2 / macdMax * 0.85;
+
+      // 零轴
+      ctx.strokeStyle = '#C4A77D';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padding, macdCenterY);
+      ctx.lineTo(width - padding, macdCenterY);
+      ctx.stroke();
+
+      // 根据计算步骤显示
+      if (state.calcStep >= 1) {
+        // DIF 线
+        drawLine(ctx, macdResult.dif, '#5B8A8A', xScale, macdYScale, macdCenterY);
+      }
+      if (state.calcStep >= 2) {
+        // DEA 线
+        drawLine(ctx, macdResult.dea, '#9B8568', xScale, macdYScale, macdCenterY);
+      }
+      if (state.calcStep >= 3) {
+        // MACD 柱
+        drawMACDBars(ctx, macdResult.macd, xScale, macdYScale, macdCenterY, '#5B8C5A', '#B8765A');
+      }
+
+      // 如果未开始演示，显示全部
+      if (state.calcStep === 0) {
+        drawLine(ctx, macdResult.dif, '#5B8A8A', xScale, macdYScale, macdCenterY);
+        drawLine(ctx, macdResult.dea, '#9B8568', xScale, macdYScale, macdCenterY);
+        drawMACDBars(ctx, macdResult.macd, xScale, macdYScale, macdCenterY, '#5B8C5A', '#B8765A');
+      }
+    }
+
+    // 章节 4：信号
+    function renderSignalsCanvas(upToIndex = null) {
+      const canvas = document.getElementById('signalsCanvas');
+      if (!canvas) return;
+      const { ctx, width, height } = setupCanvas(canvas);
+
+      const padding = 40;
+      const chartWidth = width - padding * 2;
+      const chartHeight = height - padding * 2;
+
+      clearCanvas(ctx, width, height);
+
+      const endIndex = upToIndex !== null ? upToIndex : priceData.length;
+      const displayData = priceData.slice(0, endIndex);
+      const macdResult = calcMACD(displayData, state.params.fast, state.params.slow, state.params.signal);
+
+      // 价格图（上半部分）
+      const priceChartHeight = chartHeight * 0.45;
+      const priceYOffset = padding + priceChartHeight;
+      const priceMin = Math.min(...displayData);
+      const priceMax = Math.max(...displayData);
+      const priceRange = priceMax - priceMin;
+      const priceYScale = priceChartHeight / priceRange * 0.9;
+      const xScale = chartWidth / priceData.length; // 使用全数据长度计算 xScale，保持一致
+
+      // 绘制分隔线
+      ctx.strokeStyle = '#C4A77D';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padding, padding + priceChartHeight + 20);
+      ctx.lineTo(width - padding, padding + priceChartHeight + 20);
+      ctx.stroke();
+
+      // 价格线
+      drawLine(ctx, displayData, '#B8765A', xScale, priceYScale, priceYOffset - priceMin * priceYScale);
+
+      // MACD 图（下半部分）
+      const macdChartTop = padding + priceChartHeight + 40;
+      const macdChartHeight = chartHeight * 0.45;
+      const macdCenterY = macdChartTop + macdChartHeight / 2;
+
+      const allMacd = calcMACD(priceData, state.params.fast, state.params.slow, state.params.signal);
+      const macdMax = Math.max(...allMacd.dif.map(Math.abs), ...allMacd.dea.map(Math.abs), ...allMacd.macd.map(Math.abs));
+      const macdYScale = macdChartHeight / 2 / macdMax * 0.85;
+
+      // 零轴
+      ctx.strokeStyle = '#C4A77D';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padding, macdCenterY);
+      ctx.lineTo(width - padding, macdCenterY);
+      ctx.stroke();
+
+      // DIF 线
+      drawLine(ctx, macdResult.dif, '#5B8A8A', xScale, macdYScale, macdCenterY);
+      // DEA 线
+      drawLine(ctx, macdResult.dea, '#9B8568', xScale, macdYScale, macdCenterY);
+      // MACD 柱
+      drawMACDBars(ctx, macdResult.macd, xScale, macdYScale, macdCenterY, '#5B8C5A', '#B8765A');
+
+      // 信号标注
+      const signals = detectSignals(macdResult.dif, macdResult.dea);
+      const divergences = detectDivergence(displayData, macdResult.macd);
+
+      signals.forEach(sig => {
+        const x = sig.index * xScale + padding;
+        const y = macdCenterY - macdResult.dif[sig.index] * macdYScale;
+        drawSignalMarker(ctx, x, y, sig.type);
+      });
+
+      divergences.forEach(div => {
+        const x = div.index * xScale + padding;
+        const y = macdCenterY - macdResult.macd[div.index] * macdYScale;
+        drawSignalMarker(ctx, x, y, div.type);
+      });
+
+      // 回放进度指示线
+      if (upToIndex !== null) {
+        const progressX = upToIndex * xScale + padding;
+        ctx.strokeStyle = '#4A6741';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(progressX, padding);
+        ctx.lineTo(progressX, height - padding);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+
+    // ========== 拖拽绘制 ==========
+    function setupDrawing() {
+      const wrap = document.getElementById('calcCanvasWrap');
+      if (!wrap) return;
+
+      wrap.addEventListener('pointerdown', (e) => {
+        if (state.currentTab !== 'calculation') return;
+        state.isDrawing = true;
+        state.drawnPoints = [];
+        const rect = wrap.getBoundingClientRect();
+        state.drawnPoints.push({
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        });
+      });
+
+      wrap.addEventListener('pointermove', (e) => {
+        if (!state.isDrawing || state.currentTab !== 'calculation') return;
+        const rect = wrap.getBoundingClientRect();
+        state.drawnPoints.push({
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        });
+        renderDrawnPath();
+      });
+
+      wrap.addEventListener('pointerup', () => {
+        if (!state.isDrawing) return;
+        state.isDrawing = false;
+        if (state.drawnPoints.length > 10) {
+          const prices = convertDrawnToPrices();
+          renderCalcCanvas(prices);
+        }
+      });
+
+      wrap.addEventListener('pointerleave', () => {
+        if (state.isDrawing) {
+          state.isDrawing = false;
+          if (state.drawnPoints.length > 10) {
+            const prices = convertDrawnToPrices();
+            renderCalcCanvas(prices);
+          }
+        }
+      });
+    }
+
+    function renderDrawnPath() {
+      const canvas = document.getElementById('calcCanvas');
+      if (!canvas || state.drawnPoints.length < 2) return;
+      const { ctx, width, height } = setupCanvas(canvas);
+
+      // 先绘制基础图表
+      renderCalcCanvas();
+
+      // 绘制用户绘制的路径
+      ctx.strokeStyle = '#B8765A';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      state.drawnPoints.forEach((p, i) => {
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      });
+      ctx.stroke();
+    }
+
+    function convertDrawnToPrices() {
+      const canvas = document.getElementById('calcCanvas');
+      if (!canvas) return priceData.slice(0, 60);
+      const rect = canvas.parentElement.getBoundingClientRect();
+
+      // 将绘制点转换为价格数据
+      const prices = [];
+      const padding = 40;
+      const chartHeight = rect.height - padding * 2;
+      const priceChartHeight = chartHeight * 0.45;
+
+      // 按 x 坐标排序并采样
+      const sortedPoints = [...state.drawnPoints].sort((a, b) => a.x - a.x);
+      const numSamples = 60;
+      const step = (rect.width - padding * 2) / numSamples;
+
+      for (let i = 0; i < numSamples; i++) {
+        const targetX = padding + i * step;
+        // 找最近的点
+        const nearest = sortedPoints.reduce((prev, curr) =>
+          Math.abs(curr.x - targetX) < Math.abs(prev.x - targetX) ? curr : prev
+        );
+        // 将 y 坐标转换为价格（上半部分是价格图）
+        const priceY = nearest.y;
+        // 反向计算：y 越小价格越高
+        const normalizedPrice = 1 - (priceY - padding) / priceChartHeight;
+        const price = 50 + normalizedPrice * 40; // 价格范围约 10-90
+        prices.push(Math.max(10, Math.min(90, price)));
+      }
+
+      return prices;
+    }
+
+    // ========== 计算演示动画 ==========
+    function demoCalculation() {
+      state.calcStep = 0;
+      const steps = [1, 2, 3];
+      let stepIndex = 0;
+
+      const animate = () => {
+        if (stepIndex < steps.length) {
+          state.calcStep = steps[stepIndex];
+          renderCalcCanvas();
+          stepIndex++;
+          setTimeout(animate, 800);
+        } else {
+          state.calcStep = 0;
+          setTimeout(() => renderCalcCanvas(), 500);
+        }
+      };
+
+      animate();
+    }
+
+    // ========== 回放控制 ==========
+    let playbackTimer = null;
+
+    function startPlayback() {
+      if (state.isPlaying) return;
+      state.isPlaying = true;
+      state.playbackIndex = 0;
+
+      playbackTimer = setInterval(() => {
+        if (state.playbackIndex < priceData.length) {
+          state.playbackIndex++;
+          renderSignalsCanvas(state.playbackIndex);
+          updatePlaybackUI();
+        } else {
+          stopPlayback();
+        }
+      }, 100);
+    }
+
+    function stopPlayback() {
+      state.isPlaying = false;
+      if (playbackTimer) {
+        clearInterval(playbackTimer);
+        playbackTimer = null;
+      }
+    }
+
+    function updatePlaybackUI() {
+      const fill = document.getElementById('playbackFill');
+      const step = document.getElementById('playbackStep');
+      if (fill) fill.style.width = (state.playbackIndex / priceData.length * 100) + '%';
+      if (step) step.textContent = `第 ${state.playbackIndex} 步`;
+    }
+
+    // ========== 事件绑定 ==========
+    function bindEvents() {
+      // 标签切换
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tab = btn.dataset.tab;
+          switchTab(tab);
+        });
+      });
+
+      // 参数滑块
+      document.getElementById('fastSlider')?.addEventListener('input', (e) => {
+        state.params.fast = parseInt(e.target.value);
+        document.getElementById('fastValue').textContent = state.params.fast;
+        updateParamsDisplay();
+        renderActiveCanvas();
+      });
+
+      document.getElementById('slowSlider')?.addEventListener('input', (e) => {
+        state.params.slow = parseInt(e.target.value);
+        document.getElementById('slowValue').textContent = state.params.slow;
+        updateParamsDisplay();
+        renderActiveCanvas();
+      });
+
+      document.getElementById('signalSlider')?.addEventListener('input', (e) => {
+        state.params.signal = parseInt(e.target.value);
+        document.getElementById('signalValue').textContent = state.params.signal;
+        updateParamsDisplay();
+        renderActiveCanvas();
+      });
+
+      // 组成章节切换按钮
+      document.querySelectorAll('.toggle-btn[data-line]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const line = btn.dataset.line;
+          state.showLines[line] = !state.showLines[line];
+          btn.classList.toggle('active', state.showLines[line]);
+          renderComponentsCanvas();
+        });
+      });
+
+      // 计算章节按钮
+      document.getElementById('demoCalcBtn')?.addEventListener('click', demoCalculation);
+      document.getElementById('clearDrawBtn')?.addEventListener('click', () => {
+        state.drawnPoints = [];
+        renderCalcCanvas();
+      });
+      document.getElementById('resetCalcBtn')?.addEventListener('click', () => {
+        state.drawnPoints = [];
+        state.calcStep = 0;
+        state.params = { fast: 12, slow: 26, signal: 9 };
+        document.getElementById('fastSlider').value = 12;
+        document.getElementById('slowSlider').value = 26;
+        document.getElementById('signalSlider').value = 9;
+        document.getElementById('fastValue').textContent = '12';
+        document.getElementById('slowValue').textContent = '26';
+        document.getElementById('signalValue').textContent = '9';
+        updateParamsDisplay();
+        renderCalcCanvas();
+      });
+
+      // 信号章节按钮
+      document.getElementById('playbackBtn')?.addEventListener('click', startPlayback);
+      document.getElementById('pauseBtn')?.addEventListener('click', stopPlayback);
+      document.getElementById('resetSignalsBtn')?.addEventListener('click', () => {
+        stopPlayback();
+        state.playbackIndex = 0;
+        updatePlaybackUI();
+        renderSignalsCanvas();
+      });
+
+      // 组成章节重置
+      document.getElementById('resetComponentsBtn')?.addEventListener('click', () => {
+        state.showLines = { price: true, dif: true, dea: true, macd: true };
+        document.querySelectorAll('.toggle-btn[data-line]').forEach(btn => {
+          btn.classList.add('active');
+        });
+        renderComponentsCanvas();
+      });
+
+      // 信号解读点击
+      document.querySelectorAll('.signal-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const signal = item.dataset.signal;
+          const detail = document.getElementById('signalDetail');
+          const descriptions = {
+            golden1: '金叉是买入信号。当 DIF 线从下方向上穿过 DEA 线时，表示短期趋势开始强于长期趋势，价格可能上涨。',
+            death1: '死叉是卖出信号。当 DIF 线从上方向下穿过 DEA 线时，表示短期趋势开始弱于长期趋势，价格可能下跌。',
+            bottom: '底背离是反转信号。当股价创出新低，但 MACD 没有创新低时，说明下跌动能减弱，可能即将反转上涨。',
+            top: '顶背离是预警信号。当股价创出新高，但 MACD 没有创新高时，说明上涨动能减弱，可能即将反转下跌。'
+          };
+          if (detail) detail.textContent = descriptions[signal] || '';
+          item.classList.toggle('active');
+        });
+      });
+
+      // 窗口调整
+      window.addEventListener('resize', () => {
+        renderActiveCanvas();
+      });
+    }
+
+    function switchTab(tab) {
+      state.currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+      });
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.style.display = content.dataset.content === tab ? 'block' : 'none';
+      });
+      updateStatusBar();
+      renderActiveCanvas();
+    }
+
+    function updateParamsDisplay() {
+      const el = document.getElementById('currentParams');
+      if (el) el.textContent = `${state.params.fast}/${state.params.slow}/${state.params.signal}`;
+    }
+
+    function updateStatusBar() {
+      const chapter = document.getElementById('currentChapter');
+      const hint = document.getElementById('statusHint');
+      const chapterNames = {
+        concept: '概念',
+        components: '组成',
+        calculation: '计算',
+        signals: '信号'
+      };
+      const hints = {
+        concept: '探索 MACD 的基本概念',
+        components: '了解 MACD 的三线组成',
+        calculation: '拖拽绘制股价，观察 MACD 变化',
+        signals: '播放回放，观察信号生成'
+      };
+      if (chapter) chapter.textContent = chapterNames[state.currentTab];
+      if (hint) hint.textContent = hints[state.currentTab];
+    }
+
+    function renderActiveCanvas() {
+      switch (state.currentTab) {
+        case 'concept':
+          renderConceptCanvas();
+          break;
+        case 'components':
+          renderComponentsCanvas();
+          break;
+        case 'calculation':
+          renderCalcCanvas();
+          break;
+        case 'signals':
+          renderSignalsCanvas(state.isPlaying ? state.playbackIndex : null);
+          break;
+      }
+    }
+
+    // ========== 初始化 ==========
+    function init() {
+      bindEvents();
+      setupDrawing();
+      updateStatusBar();
+      updateParamsDisplay();
+
+      // 初始渲染
+      setTimeout(() => {
+        renderConceptCanvas();
+      }, 100);
+    }
+
+    // 启动
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>

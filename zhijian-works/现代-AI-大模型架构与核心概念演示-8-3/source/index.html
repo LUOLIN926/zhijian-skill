@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>现代 AI 大模型架构与核心概念演示</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;800&display=swap');
+
+        :root {
+            /* 品牌色 */
+            --color-primary: #4A6741;
+            --color-primary-dark: #3A5334;
+            --color-primary-light: #6B8E63;
+
+            /* 背景色 */
+            --color-cream: #FAF8F5;
+            --color-cream-dark: #F5F2ED;
+            --color-earth: #C4A77D;
+
+            /* 文字色 */
+            --color-text: #3D3229;
+            --color-text-light: #6B5D4D;
+            --color-text-muted: #766958;
+
+            /* 装饰色 */
+            --color-sky: #5B8A8A;
+            --color-sky-dark: #4A7575;
+            --color-lavender: #c2a2d2;
+            --color-lavender-dark: #a388b3;
+            --color-autumn: #9B8568;
+            --color-moss: #6B8E6B;
+            --color-moss-dark: #5A7A5A;
+            --color-rust: #B8765A;
+
+            /* 状态色 */
+            --color-success: #5B8C5A;
+            --color-warning: #C9844A;
+            --color-danger: #A65D4E;
+
+            /* 字体 */
+            --font-family: 'Noto Serif SC', 'Noto Serif', serif;
+            --font-weight-regular: 400;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 800;
+
+            /* 间距 */
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+
+            /* 圆角 */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+
+            /* 阴影 */
+            --shadow-sm: 0 2px 8px rgba(61, 50, 41, 0.08);
+            --shadow-md: 0 4px 16px rgba(61, 50, 41, 0.12);
+
+            /* 过渡 */
+            --transition-fast: 0.15s ease-out;
+            --transition-normal: 0.3s ease-out;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--color-cream);
+            color: var(--color-text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: var(--spacing-lg);
+        }
+
+        /* 动画主容器 */
+        .canvas-container {
+            width: 100%;
+            max-width: 960px;
+            aspect-ratio: 16/9;
+            min-width: 600px;
+            position: relative;
+            background: linear-gradient(135deg, var(--color-cream) 0%, var(--color-cream-dark) 100%);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--color-earth);
+            overflow: hidden;
+        }
+
+        /* 节点基础样式 */
+        .node {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            transition: all var(--transition-normal);
+            background: white;
+            border: 2px solid var(--color-earth);
+            box-shadow: var(--shadow-sm);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            text-align: center;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .node-icon {
+            font-size: 1.8rem;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .node-title {
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .node-desc {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            max-width: 140px;
+        }
+
+        /* 激活发光状态 */
+        .glow-active {
+            border-color: var(--color-primary) !important;
+            box-shadow: var(--shadow-md), 0 0 24px rgba(74, 103, 65, 0.2) !important;
+            transform: translate(-50%, -50%) scale(1.03) !important;
+            z-index: 20;
+        }
+
+        /* SVG 连线层 */
+        .svg-layer {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* SVG 连线 */
+        .svg-line {
+            stroke: var(--color-earth);
+            stroke-width: 2;
+            fill: none;
+            transition: all var(--transition-normal);
+        }
+
+        .line-active {
+            stroke: var(--color-primary);
+            filter: drop-shadow(0 0 4px rgba(74, 103, 65, 0.3));
+            animation: dash-flow 1s linear infinite;
+            stroke-dasharray: 8;
+        }
+
+        @keyframes dash-flow {
+            from { stroke-dashoffset: 16; }
+            to { stroke-dashoffset: 0; }
+        }
+
+        /* Token 动画方块 */
+        .token-box {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            background-color: var(--color-lavender);
+            display: inline-block;
+            margin: 2px;
+            box-shadow: 0 0 4px rgba(194, 162, 212, 0.5);
+        }
+
+        /* 流动的数据粒子 */
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background-color: var(--color-primary);
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(74, 103, 65, 0.4);
+            z-index: 30;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        /* Context Window 内部容器 */
+        .context-inner {
+            width: 140px;
+            height: 70px;
+            background: var(--color-cream-dark);
+            border: 1px solid var(--color-earth);
+            border-radius: var(--radius-sm);
+            margin-top: var(--spacing-sm);
+            padding: var(--spacing-xs);
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .capacity-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 2px;
+            background: var(--color-primary);
+            width: 0%;
+            transition: width var(--transition-normal);
+        }
+
+        /* 节点装饰色标题 */
+        .node-sys .node-title { color: var(--color-lavender-dark); }
+        .node-user .node-title { color: var(--color-sky); }
+        .node-prompt .node-title { color: var(--color-moss); }
+        .node-ctx .node-title { color: var(--color-rust); }
+        .node-llm .node-title { color: var(--color-sky-dark); }
+        .node-agent .node-title { color: var(--color-lavender); }
+        .node-mcp .node-title { color: var(--color-moss-dark); }
+        .node-tool .node-title { color: var(--color-rust); }
+
+        /* Agent Skill Badge */
+        .skill-badge {
+            margin-top: var(--spacing-sm);
+            background: var(--color-cream-dark);
+            border: 1px solid var(--color-lavender);
+            color: var(--color-lavender-dark);
+            font-size: 0.7rem;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        /* 底部控制台 & 解说面板 */
+        .bottom-panel {
+            width: 100%;
+            max-width: 960px;
+            margin-top: var(--spacing-lg);
+            display: flex;
+            gap: var(--spacing-md);
+            z-index: 10;
+        }
+
+        /* 进度与控制 */
+        .control-panel {
+            background: white;
+            border: 1px solid var(--color-earth);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 220px;
+        }
+
+        .progress-label {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .progress-dots {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+
+        .progress-dot {
+            height: 8px;
+            flex: 1;
+            border-radius: 9999px;
+            background: var(--color-cream-dark);
+            transition: background-color var(--transition-normal);
+        }
+
+        .progress-dot.active {
+            background: var(--color-primary);
+            box-shadow: 0 0 6px rgba(74, 103, 65, 0.3);
+        }
+
+        /* 按钮样式 */
+        .btn-group {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .btn {
+            flex: 1;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: var(--font-weight-semibold);
+            transition: all var(--transition-fast);
+            cursor: pointer;
+            border: none;
+            min-height: 40px;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--color-cream-dark);
+            color: var(--color-text);
+            border: 1px solid var(--color-earth);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--color-earth);
+            color: white;
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--color-primary-dark);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* 解说面板 */
+        .explainer-panel {
+            background: white;
+            border: 1px solid var(--color-earth);
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .explainer-accent {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--color-text-muted);
+            transition: background-color var(--transition-normal);
+        }
+
+        .explainer-title {
+            font-size: 1.1rem;
+            font-weight: var(--font-weight-bold);
+            color: var(--color-text);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .explainer-text {
+            font-size: 0.9rem;
+            color: var(--color-text-light);
+            line-height: 1.7;
+        }
+
+        /* 强调词颜色 */
+        .kw-sys { color: var(--color-lavender-dark); font-weight: var(--font-weight-semibold); }
+        .kw-usr { color: var(--color-sky); font-weight: var(--font-weight-semibold); }
+        .kw-prm { color: var(--color-moss); font-weight: var(--font-weight-semibold); }
+        .kw-tok { color: var(--color-autumn); font-weight: var(--font-weight-semibold); }
+        .kw-ctx { color: var(--color-rust); font-weight: var(--font-weight-semibold); }
+        .kw-llm { color: var(--color-sky-dark); font-weight: var(--font-weight-semibold); }
+        .kw-agt { color: var(--color-lavender); font-weight: var(--font-weight-semibold); }
+        .kw-skl { color: var(--color-lavender-dark); font-weight: var(--font-weight-semibold); }
+        .kw-mcp { color: var(--color-moss-dark); font-weight: var(--font-weight-semibold); }
+        .kw-tol { color: var(--color-rust); font-weight: var(--font-weight-semibold); }
+
+        /* Token 计数 */
+        .token-count-label {
+            font-size: 0.65rem;
+            color: var(--color-text-muted);
+            margin-top: var(--spacing-xs);
+            width: 100%;
+            text-align: right;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .canvas-container {
+                min-width: 100%;
+                aspect-ratio: 4/3;
+            }
+
+            .bottom-panel {
+                flex-direction: column;
+            }
+
+            .control-panel {
+                width: 100%;
+            }
+        }
+
+        /* 减少动画 */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 动画主容器 -->
+    <div class="canvas-container" id="canvas-container">
+        <!-- SVG 连线层 -->
+        <svg class="svg-layer" id="svg-layer">
+            <path id="path-sys-prompt" class="svg-line" d="M 150 250 Q 220 250 280 450" />
+            <path id="path-user-prompt" class="svg-line" d="M 150 650 Q 220 650 280 450" />
+            <path id="path-prompt-ctx" class="svg-line" d="M 360 450 L 420 450" />
+            <path id="path-ctx-llm" class="svg-line" d="M 500 370 L 500 230" />
+            <path id="path-ctx-agent" class="svg-line" d="M 500 530 L 500 680" />
+            <path id="path-agent-mcp" class="svg-line" d="M 580 750 L 680 750" />
+            <path id="path-mcp-tool" class="svg-line" d="M 760 750 L 850 750" />
+            <path id="path-tool-ctx" class="svg-line" d="M 890 680 Q 890 450 580 450" />
+        </svg>
+
+        <!-- HTML 节点层 -->
+        <!-- 左侧：输入 -->
+        <div class="node node-sys" id="node-sys" style="left: 15%; top: 25%;">
+            <div class="node-icon">📝</div>
+            <div class="node-title">System Prompt</div>
+            <div class="node-desc">"你是一个天气助手，必须调用工具..."</div>
+        </div>
+
+        <div class="node node-user" id="node-user" style="left: 15%; top: 65%;">
+            <div class="node-icon">👤</div>
+            <div class="node-title">User Prompt</div>
+            <div class="node-desc">"今天北京需要带伞吗？"</div>
+        </div>
+
+        <!-- 中左：组合与切词 -->
+        <div class="node node-prompt" id="node-prompt" style="left: 32%; top: 45%;">
+            <div class="node-title">Prompt</div>
+            <div class="node-desc">拼接并 Token 化</div>
+        </div>
+
+        <!-- 中间：核心上下文 -->
+        <div class="node node-ctx" id="node-ctx" style="left: 50%; top: 45%;">
+            <div class="node-icon">🗂️</div>
+            <div class="node-title">Context Window</div>
+            <div class="node-desc">存储所有上下文</div>
+            <div class="context-inner" id="context-box">
+                <div class="capacity-bar" id="ctx-capacity"></div>
+            </div>
+            <div class="token-count-label"><span id="token-count">0</span> / 128k Tokens</div>
+        </div>
+
+        <!-- 中上：大模型 -->
+        <div class="node node-llm" id="node-llm" style="left: 50%; top: 15%;">
+            <div class="node-icon">🧠</div>
+            <div class="node-title">LLM</div>
+            <div class="node-desc">预测下一个 Token</div>
+        </div>
+
+        <!-- 中下：智能体 -->
+        <div class="node node-agent" id="node-agent" style="left: 50%; top: 75%;">
+            <div class="node-icon">🤖</div>
+            <div class="node-title">Agent</div>
+            <div class="skill-badge">
+                <span>⚡</span> Agent Skill: 获取天气
+            </div>
+        </div>
+
+        <!-- 右下：协议与工具 -->
+        <div class="node node-mcp" id="node-mcp" style="left: 72%; top: 75%;">
+            <div class="node-icon">🔌</div>
+            <div class="node-title">MCP</div>
+            <div class="node-desc">模型上下文协议</div>
+        </div>
+
+        <div class="node node-tool" id="node-tool" style="left: 89%; top: 75%;">
+            <div class="node-icon">🔧</div>
+            <div class="node-title">Tool</div>
+            <div class="node-desc">天气 API</div>
+        </div>
+    </div>
+
+    <!-- 底部控制台 & 解说面板 -->
+    <div class="bottom-panel">
+        <!-- 进度与控制 -->
+        <div class="control-panel">
+            <div>
+                <div class="progress-label">演示进度</div>
+                <div class="progress-dots" id="progress-dots"></div>
+            </div>
+            <div class="btn-group">
+                <button onclick="prevStep()" class="btn btn-secondary" id="btn-prev">上一步</button>
+                <button onclick="nextStep()" class="btn btn-primary" id="btn-next">开始演示</button>
+            </div>
+        </div>
+
+        <!-- 解说文本 -->
+        <div class="explainer-panel">
+            <div class="explainer-accent" id="explainer-accent"></div>
+            <h2 class="explainer-title" id="explainer-title">欢迎了解现代 AI 架构</h2>
+            <p class="explainer-text" id="explainer-text">
+                点击"开始演示"探索 AI 接收指令、处理信息、调用工具到生成回复的全过程。
+            </p>
+        </div>
+    </div>
+
+    <!-- 脚本逻辑 -->
+    <script>
+        // 步骤配置
+        const steps = [
+            {
+                title: "1. 初始输入：Prompt (提示词)",
+                text: `AI 的起点是文本指令。<br/><br/><span class='kw-sys'>System Prompt (系统提示词)</span> 是隐藏的底层设定，比如"你是一个天气助手"。<br/><span class='kw-usr'>User Prompt (用户提示词)</span> 则是你实际提出的问题，比如"今天北京需要带伞吗？"。`,
+                nodes: ['node-sys', 'node-user'],
+                lines: [],
+                accentColor: 'var(--color-lavender)',
+                action: () => {}
+            },
+            {
+                title: "2. 文本解析：Token (词元)",
+                text: `这两部分组合成完整的 <span class='kw-prm'>Prompt</span> 后，不会被直接阅读，而是被切分成 <span class='kw-tok'>Token (词元)</span>。Token 是模型理解语言的最小积木（可能是一个词、一个字或一个词根）。`,
+                nodes: ['node-prompt'],
+                lines: ['path-sys-prompt', 'path-user-prompt'],
+                accentColor: 'var(--color-moss)',
+                action: () => {
+                    flowParticles('path-sys-prompt', 'var(--color-lavender)');
+                    flowParticles('path-user-prompt', 'var(--color-sky)');
+                }
+            },
+            {
+                title: "3. 工作记忆：Context Window (上下文窗口)",
+                text: `所有输入和历史对话生成的 Tokens 都会被放入 <span class='kw-ctx'>Context Window (上下文窗口)</span>。在这里，它们构成了模型当前的 <span class='kw-ctx'>Context (上下文)</span>。窗口的容量是有限的（例如 128k Tokens），满了就会"遗忘"最早的信息。`,
+                nodes: ['node-ctx'],
+                lines: ['path-prompt-ctx'],
+                accentColor: 'var(--color-rust)',
+                action: () => {
+                    flowParticles('path-prompt-ctx', 'var(--color-moss)', 5);
+                    safeSetTimeout(() => addTokensToContext(8, 'var(--color-lavender)'), 500);
+                }
+            },
+            {
+                title: "4. 大脑核心：LLM (大语言模型)",
+                text: `<span class='kw-llm'>LLM (大语言模型)</span> 是整个系统的"大脑"。它读取 Context Window 中的所有信息，通过千亿级参数和概率计算，预测接下来应该生成哪个 Token。`,
+                nodes: ['node-llm', 'node-ctx'],
+                lines: ['path-ctx-llm'],
+                accentColor: 'var(--color-sky-dark)',
+                action: () => {
+                    startLoopFlow('path-ctx-llm', 'var(--color-sky)', true);
+                }
+            },
+            {
+                title: "5. 决策与行动：Agent (智能体)",
+                text: `单纯的 LLM 只能做文字接龙。但当赋予它目标规划能力后，它就化身为 <span class='kw-agt'>Agent (智能体)</span>。Agent 意识到自己没有实时天气数据，决定动用 <span class='kw-skl'>Agent Skill (智能体技能)</span> 来获取外部信息。`,
+                nodes: ['node-agent'],
+                lines: ['path-ctx-agent'],
+                accentColor: 'var(--color-lavender)',
+                action: () => {
+                    flowParticles('path-ctx-agent', 'var(--color-lavender)', 3);
+                }
+            },
+            {
+                title: "6. 标准连接：MCP (模型上下文协议)",
+                text: `为了安全地调用外部工具，Agent 使用了 <span class='kw-mcp'>MCP (Model Context Protocol)</span>。MCP 就像是一个通用适配器插排，让 AI 模型能以统一的格式连接本地或云端的数据源和工具。`,
+                nodes: ['node-mcp', 'node-agent'],
+                lines: ['path-agent-mcp'],
+                accentColor: 'var(--color-moss-dark)',
+                action: () => {
+                    flowParticles('path-agent-mcp', 'var(--color-moss)', 3);
+                }
+            },
+            {
+                title: "7. 外部执行：Tool (工具)",
+                text: `MCP 将标准化请求转发给具体的 <span class='kw-tol'>Tool (工具)</span>（比如一个天气 API 服务器）。Tool 接收到"查询北京天气"的指令，执行后返回结果："北京，大雨"。`,
+                nodes: ['node-tool', 'node-mcp'],
+                lines: ['path-mcp-tool'],
+                accentColor: 'var(--color-rust)',
+                action: () => {
+                    flowParticles('path-mcp-tool', 'var(--color-rust)', 3);
+                }
+            },
+            {
+                title: "8. 闭环生成：更新 Context 与输出",
+                text: `工具返回的"大雨"数据通过 MCP 传回，并作为新的 Token 追加到 <span class='kw-ctx'>Context Window</span> 中。现在，LLM 基于包含了真实天气的新 Context，生成最终回复："今天北京有大雨，出门请务必带伞！"。`,
+                nodes: ['node-ctx', 'node-llm'],
+                lines: ['path-tool-ctx', 'path-ctx-llm'],
+                accentColor: 'var(--color-primary)',
+                action: () => {
+                    flowParticles('path-tool-ctx', 'var(--color-rust)', 5);
+                    safeSetTimeout(() => addTokensToContext(4, 'var(--color-rust)'), 500);
+                    safeSetTimeout(() => {
+                        startLoopFlow('path-ctx-llm', 'var(--color-sky)', true);
+                    }, 1000);
+                }
+            }
+        ];
+
+        let currentStep = -1;
+        let loopIntervals = [];
+        let actionTimeouts = [];
+
+        function safeSetTimeout(fn, delay) {
+            const id = setTimeout(fn, delay);
+            actionTimeouts.push(id);
+            return id;
+        }
+
+        // 初始化
+        function init() {
+            const dotsContainer = document.getElementById('progress-dots');
+            for(let i=0; i<steps.length; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'progress-dot';
+                dot.id = `dot-${i}`;
+                dotsContainer.appendChild(dot);
+            }
+            updateUI();
+            resizeSVGPaths();
+            window.addEventListener('resize', resizeSVGPaths);
+        }
+
+        // SVG 响应式适配
+        function resizeSVGPaths() {
+            updateDynamicPaths();
+        }
+
+        function getCenter(el) {
+            const containerRect = document.getElementById('canvas-container').getBoundingClientRect();
+            const rect = el.getBoundingClientRect();
+            return {
+                x: rect.left - containerRect.left + rect.width / 2,
+                y: rect.top - containerRect.top + rect.height / 2
+            };
+        }
+
+        function updateDynamicPaths() {
+            const pSys = getCenter(document.getElementById('node-sys'));
+            const pUsr = getCenter(document.getElementById('node-user'));
+            const pPrm = getCenter(document.getElementById('node-prompt'));
+            const pCtx = getCenter(document.getElementById('node-ctx'));
+            const pLlm = getCenter(document.getElementById('node-llm'));
+            const pAgt = getCenter(document.getElementById('node-agent'));
+            const pMcp = getCenter(document.getElementById('node-mcp'));
+            const pTol = getCenter(document.getElementById('node-tool'));
+
+            document.getElementById('path-sys-prompt').setAttribute('d', `M ${pSys.x} ${pSys.y} Q ${pPrm.x-50} ${pSys.y} ${pPrm.x} ${pPrm.y}`);
+            document.getElementById('path-user-prompt').setAttribute('d', `M ${pUsr.x} ${pUsr.y} Q ${pPrm.x-50} ${pUsr.y} ${pPrm.x} ${pPrm.y}`);
+            document.getElementById('path-prompt-ctx').setAttribute('d', `M ${pPrm.x} ${pPrm.y} L ${pCtx.x - document.getElementById('node-ctx').offsetWidth/2} ${pCtx.y}`);
+            document.getElementById('path-ctx-llm').setAttribute('d', `M ${pCtx.x} ${pCtx.y - 60} L ${pLlm.x} ${pLlm.y + 40}`);
+            document.getElementById('path-ctx-agent').setAttribute('d', `M ${pCtx.x} ${pCtx.y + 60} L ${pAgt.x} ${pAgt.y - 40}`);
+            document.getElementById('path-agent-mcp').setAttribute('d', `M ${pAgt.x + 80} ${pAgt.y} L ${pMcp.x - 50} ${pMcp.y}`);
+            document.getElementById('path-mcp-tool').setAttribute('d', `M ${pMcp.x + 50} ${pMcp.y} L ${pTol.x - 50} ${pTol.y}`);
+            document.getElementById('path-tool-ctx').setAttribute('d', `M ${pTol.x} ${pTol.y - 40} Q ${pTol.x} ${pCtx.y} ${pCtx.x + document.getElementById('node-ctx').offsetWidth/2} ${pCtx.y}`);
+        }
+
+        // 核心流程控制
+        function nextStep() {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                applyStep(currentStep);
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                clearAllState();
+                applyStep(currentStep);
+            } else if (currentStep === 0) {
+                currentStep = -1;
+                clearAllState();
+                updateUI();
+            }
+        }
+
+        function clearAllState() {
+            document.querySelectorAll('.node').forEach(n => n.classList.remove('glow-active'));
+            document.querySelectorAll('.svg-line').forEach(l => l.classList.remove('line-active'));
+            loopIntervals.forEach(clearInterval);
+            loopIntervals = [];
+            actionTimeouts.forEach(clearTimeout);
+            actionTimeouts = [];
+            document.querySelectorAll('.particle').forEach(p => p.remove());
+            document.getElementById('context-box').innerHTML = '<div class="capacity-bar" id="ctx-capacity"></div>';
+            
+            totalTokens = 0;
+            document.getElementById('token-count').innerText = "0";
+
+            if(currentStep > 2 && currentStep !== -1) {
+                addTokensToContext(8, 'var(--color-lavender)');
+            }
+            if(currentStep > 7 && currentStep !== -1) {
+                 addTokensToContext(4, 'var(--color-rust)');
+            }
+        }
+
+        function applyStep(stepIndex) {
+            clearAllState();
+            const step = steps[stepIndex];
+
+            document.getElementById('explainer-title').innerHTML = step.title;
+            document.getElementById('explainer-text').innerHTML = step.text;
+
+            // 更新左侧装饰条颜色
+            const accent = document.getElementById('explainer-accent');
+            accent.style.background = step.accentColor;
+
+            step.nodes.forEach(id => {
+                document.getElementById(id).classList.add('glow-active');
+            });
+
+            step.lines.forEach(id => {
+                document.getElementById(id).classList.add('line-active');
+            });
+
+            if (step.action) step.action();
+
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('btn-prev').disabled = currentStep === -1;
+            const btnNext = document.getElementById('btn-next');
+            if (currentStep === steps.length - 1) {
+                btnNext.disabled = true;
+                btnNext.innerText = "演示完成";
+            } else {
+                btnNext.disabled = false;
+                btnNext.innerText = currentStep === -1 ? "开始演示" : "下一步";
+            }
+
+            for(let i=0; i<steps.length; i++) {
+                const dot = document.getElementById(`dot-${i}`);
+                if (i <= currentStep) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            }
+
+            if(currentStep === -1) {
+                document.getElementById('explainer-title').innerText = "欢迎了解现代 AI 架构";
+                document.getElementById('explainer-text').innerText = `点击"开始演示"探索 AI 接收指令、处理信息、调用工具到生成回复的全过程。`;
+                document.getElementById('explainer-accent').style.background = 'var(--color-text-muted)';
+            }
+        }
+
+        // ---- 动画特效函数 ----
+
+        function flowParticles(pathId, color, count = 1) {
+            const path = document.getElementById(pathId);
+            const container = document.getElementById('canvas-container');
+            const length = path.getTotalLength();
+
+            for(let i=0; i<count; i++) {
+                safeSetTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.backgroundColor = color;
+                    particle.style.boxShadow = `0 0 8px ${color}`;
+                    container.appendChild(particle);
+
+                    const keyframes = [];
+                    const steps = 30;
+                    for(let j=0; j<=steps; j++) {
+                        const pt = path.getPointAtLength(length * (j/steps));
+                        keyframes.push({
+                            left: `${pt.x}px`,
+                            top: `${pt.y}px`,
+                            opacity: (j===0 || j===steps) ? 0 : 1
+                        });
+                    }
+
+                    const anim = particle.animate(keyframes, {
+                        duration: 1000,
+                        easing: 'linear'
+                    });
+
+                    anim.onfinish = () => particle.remove();
+                }, i * 200);
+            }
+        }
+
+        function startLoopFlow(pathId, color, reverseAlso = false) {
+            const flow = () => {
+                flowParticles(pathId, color, 1);
+                if(reverseAlso) {
+                    safeSetTimeout(() => flowParticlesReverse(pathId, color), 500);
+                }
+            };
+            flow();
+            const id = setInterval(flow, 1200);
+            loopIntervals.push(id);
+        }
+
+        function flowParticlesReverse(pathId, color) {
+            const path = document.getElementById(pathId);
+            const container = document.getElementById('canvas-container');
+            const length = path.getTotalLength();
+
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.backgroundColor = color;
+            particle.style.boxShadow = `0 0 8px ${color}`;
+            container.appendChild(particle);
+
+            const keyframes = [];
+            const steps = 30;
+            for(let j=steps; j>=0; j--) {
+                const pt = path.getPointAtLength(length * (j/steps));
+                keyframes.push({
+                    left: `${pt.x}px`,
+                    top: `${pt.y}px`,
+                    opacity: (j===0 || j===steps) ? 0 : 1
+                });
+            }
+
+            particle.animate(keyframes, {
+                duration: 1000,
+                easing: 'linear'
+            }).onfinish = () => particle.remove();
+        }
+
+        let totalTokens = 0;
+        function addTokensToContext(count, color) {
+            const box = document.getElementById('context-box');
+            for(let i=0; i<count; i++) {
+                safeSetTimeout(() => {
+                    const t = document.createElement('div');
+                    t.className = 'token-box';
+                    t.style.backgroundColor = color;
+                    t.style.boxShadow = `0 0 4px ${color}`;
+                    t.animate([
+                        { transform: 'scale(0)' },
+                        { transform: 'scale(1.2)' },
+                        { transform: 'scale(1)' }
+                    ], { duration: 300 });
+                    box.appendChild(t);
+
+                    totalTokens += 150;
+                    document.getElementById('token-count').innerText = totalTokens;
+                    document.getElementById('ctx-capacity').style.width = Math.min((totalTokens / 1280), 100) + '%';
+                }, i * 100);
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

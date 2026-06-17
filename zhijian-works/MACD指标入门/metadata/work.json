@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "title": "MACD 指标入门：从概念到实战",
+  "brief_description": "通过交互式演示，直观理解 MACD 技术指标的原理与应用。支持参数调节、模拟股价、历史回放，深度体验金叉、死叉、背离等买卖信号。",
+  "tags": ["交互演示", "股票", "技术指标", "MACD", "金融入门"],
+  "difficulty": "入门",
+  "estimated_time": "15分钟",
+  "author": "知见平台",
+  "created_at": "2026-05-23",
+  "version": "1.0.0",
+  "license": "CC BY-NC-SA 4.0",
+  "keywords": ["MACD", "移动平均", "技术分析", "股票指标", "金叉", "死叉", "背离"],
+  "target_audience": ["股票投资者", "技术分析入门者", "金融学习者"],
+  "learning_objectives": [
+    "理解 MACD 指标的基本概念和作用",
+    "掌握 DIF、DEA、MACD柱三线的含义",
+    "了解 MACD 的计算原理和参数影响",
+    "学会识别金叉、死叉、背离等买卖信号"
+  ],
+  "features": [
+    "四个章节渐进式学习",
+    "参数实时调节观察变化",
+    "拖拽绘制模拟股价",
+    "历史走势回放演示",
+    "信号标注与解读"
+  ],
+  "technical_requirements": {
+    "browser": "现代浏览器（Chrome、Firefox、Safari、Edge）",
+    "screen": "建议宽度 900px 以上获得最佳体验",
+    "interaction": "支持鼠标拖拽和触摸操作"
+  }
+}
