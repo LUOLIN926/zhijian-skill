@@ -1,0 +1,4 @@
+interface:
+  display_name: "知见创作助手"
+  short_description: "先访谈确认需求，再设计并生成可上传知见平台的知识可视化作品"
+  default_prompt: "使用 $zhijian 先访谈并确认创作方案，再生成可上传到知见平台的完整作品包和封面。"

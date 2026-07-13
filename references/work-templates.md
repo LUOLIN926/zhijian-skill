@@ -1,0 +1,331 @@
+# 知见作品模板
+
+## 目录
+
+- 使用原则
+- 交互演示模板
+- 动态书模板
+
+## 使用原则
+
+- 模板只是结构起点；根据创作简报替换内容、状态和图形，不要交付占位示例。
+- 标题、简介、标签放在 `metadata/work.json`。作品内部只保留理解内容所需的章节标题和观察提示，不创建重复的平台标题横幅。
+- 作品在 iframe 中运行，必须完整定义自己的 token 和样式。
+- 交互演示以 1280×720 为设计视口；动态书以响应式滚动页面为主。
+
+## 交互演示模板
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>交互演示</title>
+  <style>
+    :root {
+      --color-primary: #4A6741;
+      --color-primary-dark: #3A5334;
+      --color-secondary: #A0522D;
+      --color-earth: #C4A77D;
+      --color-cream: #FAF8F5;
+      --color-cream-dark: #F5F2ED;
+      --color-text: #3D3229;
+      --color-text-light: #6B5D4D;
+      --color-text-muted: #766958;
+      --color-surface: #FFFFFF;
+      --color-surface-raised: #FFFFFF;
+      --color-control-bg: #FFFFFF;
+      --color-border: #C4A77D;
+      --color-heading: #3A5334;
+      --color-action: #4A6741;
+      --color-action-hover: #3A5334;
+      --color-on-solid: #FFFFFF;
+      --font-family: 'Noto Serif SC', 'Noto Serif', serif;
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 2px 8px rgba(61, 50, 41, .08);
+      --shadow-md: 0 4px 16px rgba(61, 50, 41, .12);
+      --transition-fast: .15s ease-out;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { width: 100%; min-height: 100%; margin: 0; }
+    body {
+      padding: var(--spacing-lg);
+      color: var(--color-text);
+      background: var(--color-cream);
+      font-family: var(--font-family);
+    }
+    button, input { font: inherit; }
+    button:focus-visible, input:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+
+    .demo-shell {
+      width: min(1232px, 100%);
+      min-height: calc(100vh - 48px);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: var(--spacing-lg);
+    }
+    .stage, .panel {
+      border: 1px solid var(--color-cream-dark);
+      border-radius: var(--radius-lg);
+      background: var(--color-surface-raised);
+      box-shadow: var(--shadow-sm);
+    }
+    .stage {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: minmax(420px, 1fr) auto;
+      overflow: hidden;
+    }
+    .visual {
+      position: relative;
+      min-height: 420px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 25% 25%, rgba(74, 103, 65, .15), transparent 36%),
+        var(--color-cream);
+    }
+    canvas { display: block; width: 100%; height: 100%; }
+    .metrics { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--color-cream-dark); }
+    .metric { padding: var(--spacing-md); border-right: 1px solid var(--color-cream-dark); }
+    .metric:last-child { border-right: 0; }
+    .metric span { display: block; color: var(--color-text-muted); font-size: .8rem; }
+    .metric strong { color: var(--color-heading); font-size: 1.25rem; }
+    .panel { padding: var(--spacing-lg); align-content: start; display: grid; gap: var(--spacing-md); }
+    .panel h2 { margin: 0; color: var(--color-heading); font-size: 1.35rem; }
+    .panel p { margin: 0; color: var(--color-text-light); line-height: 1.7; }
+    .controls { display: grid; gap: var(--spacing-sm); }
+    .control-label { display: flex; justify-content: space-between; gap: var(--spacing-sm); color: var(--color-text-light); font-size: .9rem; }
+    input[type='range'] { width: 100%; accent-color: var(--color-primary); }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm); }
+    .btn {
+      min-height: 44px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      background: var(--color-cream-dark);
+      color: var(--color-text);
+      cursor: pointer;
+      font-weight: 700;
+      transition: background var(--transition-fast), transform var(--transition-fast);
+    }
+    .btn-primary { border-color: transparent; background: var(--color-action); color: var(--color-on-solid); }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary:hover { background: var(--color-action-hover); }
+    .observation { padding: var(--spacing-md); border-left: 3px solid var(--color-secondary); background: var(--color-cream-dark); line-height: 1.65; }
+
+    @media (max-width: 820px) {
+      body { padding: var(--spacing-md); }
+      .demo-shell { grid-template-columns: 1fr; }
+      .stage { grid-template-rows: minmax(360px, 56vh) auto; }
+    }
+    @media (max-width: 520px) {
+      .metrics { grid-template-columns: 1fr; }
+      .metric { border-right: 0; border-bottom: 1px solid var(--color-cream-dark); }
+      .actions { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="demo-shell">
+    <section class="stage" aria-label="主题动态演示">
+      <div class="visual"><canvas id="canvas" aria-label="主题关系图"></canvas></div>
+      <div class="metrics" aria-live="polite">
+        <div class="metric"><span>参数</span><strong id="metricA">0.50</strong></div>
+        <div class="metric"><span>结果</span><strong id="metricB">50%</strong></div>
+        <div class="metric"><span>状态</span><strong id="status">观察中</strong></div>
+      </div>
+    </section>
+    <aside class="panel" aria-label="观察控制台">
+      <h2>观察提示</h2>
+      <p>说明用户要改变什么、观察什么，以及变化代表的知识含义。</p>
+      <div class="controls">
+        <label class="control-label" for="parameter"><span>核心参数</span><output id="parameterValue">0.50</output></label>
+        <input id="parameter" type="range" min="0" max="100" value="50" aria-describedby="observation">
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="play" type="button">播放</button>
+        <button class="btn" id="reset" type="button">重置</button>
+      </div>
+      <div class="observation" id="observation" aria-live="polite">拖动参数，比较图形与结果如何同步变化。</div>
+    </aside>
+  </main>
+  <script>
+    const canvas = document.querySelector('#canvas');
+    const context = canvas.getContext('2d');
+    const parameter = document.querySelector('#parameter');
+    const parameterValue = document.querySelector('#parameterValue');
+    const metricA = document.querySelector('#metricA');
+    const metricB = document.querySelector('#metricB');
+    const status = document.querySelector('#status');
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let playing = false;
+    let frame = 0;
+
+    function fit() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
+      draw();
+    }
+    function draw() {
+      const rect = canvas.getBoundingClientRect();
+      const value = Number(parameter.value) / 100;
+      context.clearRect(0, 0, rect.width, rect.height);
+      context.fillStyle = '#FAF8F5';
+      context.fillRect(0, 0, rect.width, rect.height);
+      context.fillStyle = '#4A6741';
+      context.beginPath();
+      context.arc(rect.width * (.25 + value * .5), rect.height / 2, 26 + value * 42, 0, Math.PI * 2);
+      context.fill();
+      parameterValue.value = value.toFixed(2);
+      metricA.textContent = value.toFixed(2);
+      metricB.textContent = Math.round(value * 100) + '%';
+    }
+    function loop() {
+      if (!playing || reduceMotion) return;
+      frame += 1;
+      parameter.value = String((Math.sin(frame / 45) * .5 + .5) * 100);
+      draw();
+      requestAnimationFrame(loop);
+    }
+    parameter.addEventListener('input', draw);
+    document.querySelector('#play').addEventListener('click', () => {
+      playing = !playing;
+      status.textContent = playing ? '播放中' : '已暂停';
+      document.querySelector('#play').textContent = playing ? '暂停' : '播放';
+      if (playing) loop();
+    });
+    document.querySelector('#reset').addEventListener('click', () => {
+      playing = false;
+      parameter.value = '50';
+      status.textContent = '观察中';
+      document.querySelector('#play').textContent = '播放';
+      draw();
+    });
+    new ResizeObserver(fit).observe(canvas);
+  </script>
+</body>
+</html>
+```
+
+## 动态书模板
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>动态书</title>
+  <style>
+    :root {
+      --color-primary: #4A6741;
+      --color-primary-dark: #3A5334;
+      --color-secondary: #A0522D;
+      --color-earth: #C4A77D;
+      --color-cream: #FAF8F5;
+      --color-cream-dark: #F5F2ED;
+      --color-text: #3D3229;
+      --color-text-light: #6B5D4D;
+      --color-text-muted: #766958;
+      --color-surface: #FFFFFF;
+      --color-surface-raised: #FFFFFF;
+      --color-border: #C4A77D;
+      --color-heading: #3A5334;
+      --color-action: #4A6741;
+      --color-on-solid: #FFFFFF;
+      --font-family: 'Noto Serif SC', 'Noto Serif', serif;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --spacing-2xl: 48px;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 2px 8px rgba(61, 50, 41, .08);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--color-cream); color: var(--color-text); font: 16px/1.8 var(--font-family); }
+    a { color: var(--color-primary); }
+    a:focus-visible, button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+    .book { width: min(920px, calc(100% - 32px)); margin: 0 auto; padding: var(--spacing-xl) 0 96px; }
+    .progress { position: sticky; top: 0; z-index: 10; height: 4px; background: var(--color-cream-dark); }
+    .progress span { display: block; width: 0; height: 100%; background: var(--color-primary); }
+    .chapter { scroll-margin-top: 24px; padding: var(--spacing-2xl) clamp(20px, 5vw, 56px); border-bottom: 1px solid var(--color-cream-dark); background: var(--color-surface-raised); }
+    .chapter:first-of-type { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+    .chapter:last-of-type { border: 0; border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+    .chapter-label { margin: 0 0 var(--spacing-sm); color: var(--color-secondary); font-size: .8rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    h2 { margin: 0 0 var(--spacing-md); color: var(--color-heading); font-size: clamp(1.55rem, 4vw, 2.4rem); line-height: 1.25; }
+    p { margin: 0 0 var(--spacing-md); }
+    .lead { color: var(--color-text-light); font-size: 1.08rem; }
+    .insight { margin: var(--spacing-lg) 0; padding: var(--spacing-md) var(--spacing-lg); border-left: 4px solid var(--color-primary); background: var(--color-cream-dark); }
+    .demo { min-height: 320px; margin: var(--spacing-xl) 0; display: grid; place-items: center; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: linear-gradient(135deg, rgba(74, 103, 65, .1), transparent), var(--color-cream); }
+    .demo button { min-height: 44px; padding: 10px 18px; border: 0; border-radius: var(--radius-sm); background: var(--color-action); color: var(--color-on-solid); font: 700 1rem var(--font-family); cursor: pointer; }
+    .chapter-nav { display: flex; flex-wrap: wrap; gap: var(--spacing-sm); margin-bottom: var(--spacing-lg); padding: var(--spacing-md); border-radius: var(--radius-md); background: var(--color-surface-raised); box-shadow: var(--shadow-sm); }
+    .chapter-nav a { padding: 6px 10px; border-radius: var(--radius-sm); text-decoration: none; }
+    .chapter-nav a:hover { background: var(--color-cream-dark); }
+    @media (max-width: 560px) { .book { width: min(100% - 20px, 920px); padding-top: 10px; } .chapter { padding: 36px 20px; } }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+  <main class="book">
+    <nav class="chapter-nav" aria-label="章节导航">
+      <a href="#question">问题</a><a href="#mechanism">机制</a><a href="#practice">实践</a>
+    </nav>
+    <section class="chapter" id="question">
+      <p class="chapter-label">01 · 从问题开始</p>
+      <h2>用一个具体问题建立学习动机</h2>
+      <p class="lead">描述读者会遇到的现象、矛盾或任务，不重复平台上的作品标题和简介。</p>
+      <div class="insight"><strong>阅读提示：</strong>告诉读者本章要观察的关系。</div>
+    </section>
+    <section class="chapter" id="mechanism">
+      <p class="chapter-label">02 · 理解机制</p>
+      <h2>把抽象关系变成可以操作的模型</h2>
+      <p>先解释变量和因果关系，再让读者操作。不要用动画代替解释。</p>
+      <div class="demo" aria-label="机制交互演示">
+        <button id="demoButton" type="button" aria-describedby="demoResult">改变条件</button>
+      </div>
+      <p id="demoResult" class="insight" aria-live="polite">当前结果会在这里说明变化及其含义。</p>
+    </section>
+    <section class="chapter" id="practice">
+      <p class="chapter-label">03 · 迁移与实践</p>
+      <h2>把机制用于新的情境</h2>
+      <p>提供一个练习、判断或现实案例，并给出可以自查的结论。</p>
+    </section>
+  </main>
+  <script>
+    const progress = document.querySelector('#progress');
+    const updateProgress = () => {
+      const max = document.documentElement.scrollHeight - innerHeight;
+      progress.style.width = (max > 0 ? scrollY / max * 100 : 100) + '%';
+    };
+    addEventListener('scroll', updateProgress, { passive: true });
+    addEventListener('resize', updateProgress);
+    document.querySelector('#demoButton').addEventListener('click', () => {
+      document.querySelector('#demoResult').textContent = '条件已改变：在这里解释结果为什么变化，以及它验证了什么。';
+    });
+    updateProgress();
+  </script>
+</body>
+</html>
+```
