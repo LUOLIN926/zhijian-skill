@@ -226,6 +226,8 @@
 
 ## 动态书模板
 
+动态书正文不生成目录。平台按 DOM 顺序读取 `<section data-zhijian-chapter id="...">`，并取该分节内第一个 `h2` 作为目录标题；每个 `id` 必须唯一。演示、图片说明和小节标题使用 `h3` 或更低层级，避免被当作章节。
+
 ```html
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -263,68 +265,56 @@
     }
     *, *::before, *::after { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-    body { margin: 0; background: var(--color-cream); color: var(--color-text); font: 16px/1.8 var(--font-family); }
+    body { margin: 0; background: var(--color-surface); color: var(--color-text); font: 16px/1.8 var(--font-family); }
     a { color: var(--color-primary); }
     a:focus-visible, button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
-    .book { width: min(920px, calc(100% - 32px)); margin: 0 auto; padding: var(--spacing-xl) 0 96px; }
-    .progress { position: sticky; top: 0; z-index: 10; height: 4px; background: var(--color-cream-dark); }
-    .progress span { display: block; width: 0; height: 100%; background: var(--color-primary); }
-    .chapter { scroll-margin-top: 24px; padding: var(--spacing-2xl) clamp(20px, 5vw, 56px); border-bottom: 1px solid var(--color-cream-dark); background: var(--color-surface-raised); }
-    .chapter:first-of-type { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
-    .chapter:last-of-type { border: 0; border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+    .book { width: min(760px, calc(100% - 32px)); margin: 0 auto; padding: clamp(24px, 5vw, 56px) 0 96px; }
+    .chapter { scroll-margin-top: 24px; padding: clamp(36px, 7vw, 64px) 0; border-bottom: 1px solid var(--color-cream-dark); }
+    .chapter:first-of-type { padding-top: 0; }
+    .chapter:last-of-type { border: 0; }
     .chapter-label { margin: 0 0 var(--spacing-sm); color: var(--color-secondary); font-size: .8rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
     h2 { margin: 0 0 var(--spacing-md); color: var(--color-heading); font-size: clamp(1.55rem, 4vw, 2.4rem); line-height: 1.25; }
     p { margin: 0 0 var(--spacing-md); }
     .lead { color: var(--color-text-light); font-size: 1.08rem; }
     .insight { margin: var(--spacing-lg) 0; padding: var(--spacing-md) var(--spacing-lg); border-left: 4px solid var(--color-primary); background: var(--color-cream-dark); }
-    .demo { min-height: 320px; margin: var(--spacing-xl) 0; display: grid; place-items: center; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: linear-gradient(135deg, rgba(74, 103, 65, .1), transparent), var(--color-cream); }
+    h3 { margin: var(--spacing-xl) 0 var(--spacing-sm); color: var(--color-text); font-size: 1.2rem; }
+    figure { margin: var(--spacing-xl) 0; }
+    figure img { display: block; width: 100%; height: auto; border-radius: var(--radius-sm); }
+    figcaption { margin-top: var(--spacing-sm); color: var(--color-text-muted); font-size: .85rem; line-height: 1.6; }
+    .demo { min-height: 320px; margin: var(--spacing-md) 0 var(--spacing-xl); display: grid; place-items: center; border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); background: linear-gradient(135deg, rgba(74, 103, 65, .08), transparent); }
     .demo button { min-height: 44px; padding: 10px 18px; border: 0; border-radius: var(--radius-sm); background: var(--color-action); color: var(--color-on-solid); font: 700 1rem var(--font-family); cursor: pointer; }
-    .chapter-nav { display: flex; flex-wrap: wrap; gap: var(--spacing-sm); margin-bottom: var(--spacing-lg); padding: var(--spacing-md); border-radius: var(--radius-md); background: var(--color-surface-raised); box-shadow: var(--shadow-sm); }
-    .chapter-nav a { padding: 6px 10px; border-radius: var(--radius-sm); text-decoration: none; }
-    .chapter-nav a:hover { background: var(--color-cream-dark); }
-    @media (max-width: 560px) { .book { width: min(100% - 20px, 920px); padding-top: 10px; } .chapter { padding: 36px 20px; } }
+    @media (max-width: 560px) { .book { width: min(100% - 24px, 760px); padding-top: 20px; } .chapter { padding: 40px 0; } }
     @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
   </style>
 </head>
 <body>
-  <div class="progress" aria-hidden="true"><span id="progress"></span></div>
   <main class="book">
-    <nav class="chapter-nav" aria-label="章节导航">
-      <a href="#question">问题</a><a href="#mechanism">机制</a><a href="#practice">实践</a>
-    </nav>
-    <section class="chapter" id="question">
+    <section class="chapter" id="question" data-zhijian-chapter>
       <p class="chapter-label">01 · 从问题开始</p>
       <h2>用一个具体问题建立学习动机</h2>
       <p class="lead">描述读者会遇到的现象、矛盾或任务，不重复平台上的作品标题和简介。</p>
       <div class="insight"><strong>阅读提示：</strong>告诉读者本章要观察的关系。</div>
     </section>
-    <section class="chapter" id="mechanism">
+    <section class="chapter" id="mechanism" data-zhijian-chapter>
       <p class="chapter-label">02 · 理解机制</p>
       <h2>把抽象关系变成可以操作的模型</h2>
       <p>先解释变量和因果关系，再让读者操作。不要用动画代替解释。</p>
-      <div class="demo" aria-label="机制交互演示">
+      <h3 id="demoTitle">观察条件如何改变结果</h3>
+      <div class="demo" aria-labelledby="demoTitle">
         <button id="demoButton" type="button" aria-describedby="demoResult">改变条件</button>
       </div>
       <p id="demoResult" class="insight" aria-live="polite">当前结果会在这里说明变化及其含义。</p>
     </section>
-    <section class="chapter" id="practice">
+    <section class="chapter" id="practice" data-zhijian-chapter>
       <p class="chapter-label">03 · 迁移与实践</p>
       <h2>把机制用于新的情境</h2>
       <p>提供一个练习、判断或现实案例，并给出可以自查的结论。</p>
     </section>
   </main>
   <script>
-    const progress = document.querySelector('#progress');
-    const updateProgress = () => {
-      const max = document.documentElement.scrollHeight - innerHeight;
-      progress.style.width = (max > 0 ? scrollY / max * 100 : 100) + '%';
-    };
-    addEventListener('scroll', updateProgress, { passive: true });
-    addEventListener('resize', updateProgress);
     document.querySelector('#demoButton').addEventListener('click', () => {
       document.querySelector('#demoResult').textContent = '条件已改变：在这里解释结果为什么变化，以及它验证了什么。';
     });
-    updateProgress();
   </script>
 </body>
 </html>
