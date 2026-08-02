@@ -1,31 +1,16 @@
-# 知见作品包规范
+# 知见作品与合集包规范
 
-## 目录
-
-- 目录结构
-- 新建导入清单
-- 平台导出快照
-- 封面
-- 上传与检查
-
-## 目录结构
+## 单作品目录
 
 ```text
 作品名/
-├── source/
-│   └── index.html
-├── metadata/
-│   ├── work.json
-│   └── usage.md
-└── cover/
-    └── cover.png | cover.jpg | cover.webp | cover.html
+├── source/index.html
+├── metadata/work.json
+├── metadata/usage.md（交互演示可选）
+└── cover/cover.png | cover.jpg | cover.webp | cover.html
 ```
 
-`source/index.html` 必须是完整、自包含的 HTML 文档。`metadata/work.json` 用于预填上传表单；`usage.md` 便于独立阅读，并应与 JSON 中的 `usage_markdown` 保持一致。
-
-## 新建导入清单
-
-为新作品只写平台会导入的字段：
+`source/index.html` 必须是完整、自包含的 HTML 文档。`work.json` 是平台元数据主来源。交互演示的 `usage_markdown` 为空时可读取 `usage.md`；动态书不使用独立操作说明，应省略 `usage_markdown` 和 `usage.md`，导入时平台也会清除旧值。
 
 ```json
 {
@@ -37,58 +22,80 @@
 }
 ```
 
-| 字段 | 规则 |
-|---|---|
-| `schema_version` | 必须为 `1` |
-| `title` | 必填，去除首尾空白后不超过 200 字符 |
-| `brief_description` | 可选，不超过 2000 字符 |
-| `usage_markdown` | 可选，不超过 200000 字符 |
-| `tags` | 最多 5 个、去重；首个类型标签为 `交互演示` 或 `动态书` |
+- 标题必填且不超过 200 字符；简介不超过 2000 字符；使用说明不超过 200000 字符。
+- 标签去重后最多 5 个，每个不超过 50 字符；唯一类型标签必须是 `交互演示` 或 `动态书`，并放在首位。
+- HTML 不超过 4MB；图片封面限 PNG/JPEG/WebP、5MB、最长边 4096px；HTML 封面不超过 32KB。
 
-不要为新作品伪造 `id`、`status`、`cover`、`created_at`、`updated_at` 或 `exported_at`。平台上传页会忽略这些导出字段，封面文件需要单独选择。
+## 完整合集目录
 
-## 平台导出快照
+```text
+合集名/
+├── metadata/
+│   ├── collection.json
+│   └── introduction.md
+├── cover/
+│   └── cover.png | cover.jpg | cover.webp | cover.html
+└── works/
+    ├── 01-作品目录/
+    │   ├── source/index.html
+    │   ├── metadata/work.json
+    │   ├── metadata/usage.md（交互演示可选）
+    │   └── cover/cover.png | cover.jpg | cover.webp | cover.html
+    └── 02-作品目录/
+        └── ...
+```
 
-从平台下载的作品包可能额外包含：
+每个 `works/` 直接子目录都是完整、可独立运行和审核的标准作品包。目录名是合集清单中的稳定作品键，不在目录名中使用 `/` 或 `\`。
+
+### collection.json
 
 ```json
 {
-  "id": 123,
-  "status": "published",
-  "cover": {
-    "type": "image",
-    "thumbnail_url": "/api/v1/uploads/covers/example.png",
-    "has_html_cover": false
-  },
-  "created_at": "...",
-  "updated_at": "...",
-  "exported_at": "..."
+  "schema_version": 1,
+  "name": "合集名称",
+  "brief_description": "用于卡片和搜索的短简介",
+  "introduction_markdown": "# 合集完整介绍\n...",
+  "tags": ["主题标签"],
+  "chapters": [
+    {
+      "title": "第一章",
+      "works": ["01-作品目录"],
+      "children": [
+        {
+          "title": "第一节",
+          "works": ["02-作品目录"],
+          "children": []
+        }
+      ]
+    }
+  ]
 }
 ```
 
-这些字段是只读快照。优化下载包时保留以便追踪，但不要依赖它们控制重新上传后的 ID、状态或时间。
+- `schema_version` 必须为 `1`；名称不超过 200 字符，短简介不超过 2000 字符，完整介绍不超过 200000 字符。
+- `introduction_markdown` 非空时优先使用，否则读取必需的 `metadata/introduction.md`。
+- 合集标签最多 10 个，每个不超过 50 字符；合集本身不使用作品类型标签。
+- `chapters` 是有序树，最多 100 个章节和 3 层；每个节点同时允许包含作品与子章节。
+- `works` 只能引用 `works/` 下的直接子目录名；数组顺序就是章节内作品顺序。
+- 合集至少包含 1 个、最多 50 个作品。每个作品必须且只能被引用一次，不允许重复、遗漏或未知引用。
+- 合集内 `.html`、`.json`、`.md` 文本文件合计不超过 48MB。
+- 合集封面可省略，但 Codex 默认使用 ImageGen 生成一套；图片合集封面不使用 GIF。
 
-## 封面
+## 平台导出只读字段
 
-- 图片封面：PNG、JPEG 或 WebP，≤ 5MB，最长边 ≤ 4096px；建议 16:10。
-- HTML 封面：完整自包含文档，建议 1200×750，不使用外部脚本或资源。
-- 一个最终作品包只放一套封面；没有封面时可以省略 `cover/`。
-- GIF 可能出现在旧导出包中，但新生成封面优先使用 PNG/JPEG/WebP。
+平台下载包可能包含 `id`、`status`、`cover`、`created_at`、`updated_at` 或 `exported_at`。这些字段只用于追踪导出来源，重新导入时不会控制平台 ID、状态、封面或时间。新建包不要伪造这些字段。
 
-## 上传与检查
+## 验证与上传
 
-在知见 `/create` 选择作品类型，再分别提供：
+交付前同时执行单作品验证和合集交叉验证：
 
-1. `source/index.html`
-2. `metadata/work.json`（可选但推荐）
-3. 图片封面（可选；HTML 封面可在发布助手中生成或粘贴）
+- [ ] 所有 HTML 可独立打开，无控制台错误且满足大小限制
+- [ ] 每个作品只有一种有效类型，类型标签已规范到 `tags[0]`
+- [ ] 动态书没有残留 `usage_markdown` 或 `metadata/usage.md`
+- [ ] 每个作品和合集最多保留一套最终封面
+- [ ] `collection.json` 引用与 `works/` 目录一一对应
+- [ ] 章节深度、章节数、作品数和标签数合法
+- [ ] JSON 元数据与 Markdown 独立文件内容一致；不一致时明确 JSON 为主
+- [ ] 隐藏文件和无关附件不参与结构
 
-上传前检查：
-
-- [ ] HTML 可独立打开且没有控制台错误
-- [ ] 标题、简介和使用说明与作品内容一致
-- [ ] `schema_version` 为 1
-- [ ] 类型标签位于 `tags[0]`
-- [ ] 标签不超过 5 个
-- [ ] 图片封面大小与尺寸合法，或 HTML 封面自包含
-- [ ] 新建清单不含伪造的平台只读字段
+在知见创作中心选择“直接上传”，选择单作品或合集的整个根目录。浏览器会自动识别结构并进入确认页；不要逐项选择文件，也不要把多个散装作品的上级目录当作合集上传。第一版不支持 ZIP。
